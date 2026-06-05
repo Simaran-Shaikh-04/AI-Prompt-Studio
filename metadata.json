@@ -1,0 +1,6 @@
+{
+  "name": "Claude Prompt Architect",
+  "description": "Optimize natural human language into highly structured, token-saving prompt templates designed for Claude AI, featuring interactive reflective question generation for precise app specification.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

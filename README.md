@@ -1,19 +1,20 @@
----
-title: Ai Prompt Scoping Studio
-emoji: 🚀
-colorFrom: red
-colorTo: red
-sdk: docker
-app_port: 8501
-tags:
-- streamlit
-pinned: false
-short_description: Streamlit template space
----
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
+</div>
 
-# Welcome to Streamlit!
+# Run and deploy your AI Studio app
 
-Edit `/src/streamlit_app.py` to customize this app to your heart's desire. :heart:
+This contains everything you need to run your app locally.
 
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+View your app in AI Studio: https://ai.studio/apps/68830a69-8d0f-4b46-834b-4c6e420a2ba9
+
+## Run Locally
+
+**Prerequisites:**  Node.js
+
+
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`
