@@ -1,20 +1,27 @@
+---
+title: Claude Prompt Studio
+emoji: 🚀
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
+<img width="1200" height="475" alt="GHBanner" src="https://ai.google.com/static/site-assets/images/share-ais-5133153189.png" />
 </div>
 
-# Run and deploy your AI Studio app
+# Claude Application Prompt Architect & Image Studio
 
-This contains everything you need to run your app locally.
+A sophisticated multi-modal workspace designed to draft highly optimized developer guidelines, context memory frames, social marketing banner asset parameters, and scholar presentation outlines.
 
-View your app in AI Studio: https://ai.studio/apps/68830a69-8d0f-4b46-834b-4c6e420a2ba9
+## 🐳 Running on Hugging Face Spaces
+This app is ready to run as a Docker container on Hugging Face!
 
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### Local Development
+If you'd like to test the code on your local computer first:
+1. Extract your downloaded ZIP file.
+2. Open terminal in the directory and run:
+   ```bash
+   npm install
