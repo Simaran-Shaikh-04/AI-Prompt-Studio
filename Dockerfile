@@ -1,20 +1,38 @@
-FROM python:3.13.5-slim
+# --- STAGE 1: BUILD THE APPLICATION ---
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+# Copy dependency mappings
+COPY package*.json ./
 
-COPY requirements.txt ./
-COPY src/ ./src/
+# Install all workspace dependencies
+RUN npm ci || npm install
 
-RUN pip3 install -r requirements.txt
+# Copy source configuration files
+COPY . .
 
-EXPOSE 8501
+# Run production build (compiles the spa client and bundles server.ts)
+RUN npm run build
 
-HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health
+# --- STAGE 2: PRODUCTION RUNTIME ---
+FROM node:20-alpine AS runner
 
-ENTRYPOINT ["streamlit", "run", "src/streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+WORKDIR /app
+
+# Set production environment variables
+ENV NODE_ENV=production
+ENV PORT=7860
+
+# Custom port configuration for Hugging Face Spaces compatibility
+EXPOSE 7860
+
+# Copy output bundles and core manifests from Builder stage
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
+
+# Install production dependencies only to minimize image size
+RUN npm prune --production || npm install --omit=dev
+
+# Start Express server hosting compiled React client side page
+CMD ["npm", "run", "start"]
