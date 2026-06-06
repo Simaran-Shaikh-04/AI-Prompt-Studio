@@ -8,11 +8,10 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
-// Body parser
-app.use(express.json());
+// Body parser - increased limit for image attachments
+app.use(express.json({ limit: "50mb" }));
 
 // Initialize Gemini client on the server
-// Note: We set the User-Agent header to 'aistudio-build' in httpOptions for telemetry.
 const apiKey = process.env.GEMINI_API_KEY;
 const ai = new GoogleGenAI({
   apiKey: apiKey || "MOCK_KEY_FOR_LOCAL_DEV",
@@ -90,7 +89,7 @@ app.post("/api/generate-questions", checkApiKey, async (req, res) => {
   }
 });
 
-// API: Generate optimized prompt and token token/architectural analysis
+// API: Generate optimized prompt and token/architectural analysis
 app.post("/api/generate-prompt", checkApiKey, async (req, res) => {
   try {
     const { appIdea, answers, profileId, attachments } = req.body;
@@ -109,19 +108,20 @@ app.post("/api/generate-prompt", checkApiKey, async (req, res) => {
       answersContext = "No additional answers provided.";
     }
 
-    // Convert uploaded attachments into a clean readable context block
+    // Build text context for non-image attachments
     let attachmentsContext = "";
     if (attachments && attachments.length > 0) {
       attachmentsContext = "\n\n### REFERENCE ATTACHMENTS AND DOCUMENTS GIVEN AS CONTEXT:\n";
-      attachments.forEach((att: any, idx: number) => {
+      attachments.forEach((att: any) => {
         const sizeMb = (att.size / (1024 * 1024)).toFixed(2);
-        // Clean content if too long but keep key structure
-        let cleanText = att.content || "";
-        if (cleanText.startsWith("data:") && cleanText.length > 200) {
-          cleanText = `[Base64 encoded Image Data (${att.type}), previewed matching width/height standards]`;
-        }
+        const isImage = att.type?.startsWith("image/");
         attachmentsContext += `<reference_attachment id="${att.id}" name="${att.name}" type="${att.type || 'unknown'}" size="${sizeMb} MB">\n`;
-        attachmentsContext += `${cleanText}\n`;
+        if (isImage) {
+          // Images are passed as inline data parts, just note them here
+          attachmentsContext += `[Image file — visual content passed directly to model]\n`;
+        } else {
+          attachmentsContext += `${att.content || ""}\n`;
+        }
         attachmentsContext += `</reference_attachment>\n\n`;
       });
     }
@@ -143,16 +143,37 @@ app.post("/api/generate-prompt", checkApiKey, async (req, res) => {
       "1. `optimizedPrompt`: A beautifully formatted string containing the complete, ready-to-copy markdown prompt for Claude. It must utilize elegant spacing, formatting, and XML tags (e.g., <system_role>, <context>, <instructions>, <token_optimization_rules>).\n" +
       "2. `analysis`: Structural details including efficiencyScore (0-100), estimated savings, pros, cons, and recommendations for working with Claude on this task.";
 
-    const prompt = 
+    const textPrompt = 
       `ORIGINAL APP IDEA:\n"${appIdea}"\n\n` +
       `USER SPECIFICATIONS/ANSWERS:\n${answersContext}\n\n` +
       `${attachmentsContext}` +
       `OPTIMIZATION PROFILE REQUESTED: "${profileId}"\n\n` +
       `Generate the structured prompt and full analysis now. Make sure the prompt has a visible section listing all ${attachments ? attachments.length : 0} uploaded files so Claude is aware to implement features relying on them.`;
 
+    // Build multipart contents array — text first, then inline images
+    const contentParts: any[] = [{ text: textPrompt }];
+
+    if (attachments && attachments.length > 0) {
+      attachments.forEach((att: any) => {
+        const isImage = att.type?.startsWith("image/");
+        if (isImage && att.content) {
+          // Strip the data URL prefix (e.g. "data:image/png;base64,") to get raw base64
+          const base64Data = att.content.includes(",")
+            ? att.content.split(",")[1]
+            : att.content;
+          contentParts.push({
+            inlineData: {
+              mimeType: att.type,
+              data: base64Data
+            }
+          });
+        }
+      });
+    }
+
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: prompt,
+      contents: [{ role: "user", parts: contentParts }],
       config: {
         systemInstruction,
         responseMimeType: "application/json",
@@ -213,7 +234,7 @@ app.post("/api/generate-prompt", checkApiKey, async (req, res) => {
   }
 });
 
-// Setup Vite Dev server or Serve static files in production as requested in instructions
+// Setup Vite Dev server or Serve static files in production
 async function setupServer() {
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
@@ -223,7 +244,6 @@ async function setupServer() {
     });
     app.use(vite.middlewares);
   } else {
-    // Serve static frontend assets from dist in production
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
