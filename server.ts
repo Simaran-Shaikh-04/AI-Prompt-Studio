@@ -51,7 +51,7 @@ app.post("/api/generate-questions", checkApiKey, async (req, res) => {
     const prompt = `Task / App Idea: "${appIdea}"\n\nGenerate exactly 4 essential reflective questions that help narrow down the technical scope, methodology parameters, source expectations, interactive parameters, or output details of this task so that Claude can write the perfect code or construct the perfect academic response.`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
         systemInstruction,
@@ -151,7 +151,7 @@ app.post("/api/generate-prompt", checkApiKey, async (req, res) => {
       `Generate the structured prompt and full analysis now. Make sure the prompt has a visible section listing all ${attachments ? attachments.length : 0} uploaded files so Claude is aware to implement features relying on them.`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
         systemInstruction,
