@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Bot, Sparkles, Link2, GraduationCap, Image as ImageIcon, Library, AlertTriangle, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Bot, Sparkles, Link2, GraduationCap, Image as ImageIcon, Library, KeyRound, AlertTriangle, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 import PromptForge from "./components/PromptForge";
@@ -7,8 +7,10 @@ import ContextBridge from "./components/ContextBridge";
 import StudentSuite from "./components/StudentSuite";
 import ImagePromptStudio from "./components/ImagePromptStudio";
 import ResourceHub from "./components/ResourceHub";
+import ApiKeyModal from "./components/ApiKeyModal";
+import { hasApiKey } from "./lib/api";
 
-type MainTab = "forge" | "bridge" | "student" | "image" | "career" | "resources";
+type MainTab = "forge" | "bridge" | "student" | "image" | "resources";
 
 const TABS: {
   id: MainTab;
@@ -75,6 +77,16 @@ const TABS: {
 export default function App() {
   const [activeTab, setActiveTab] = useState<MainTab>("forge");
   const [globalError, setGlobalError] = useState<string | null>(null);
+  const [keyModalOpen, setKeyModalOpen] = useState(false);
+
+  // Open the setup modal on first visit (no key yet), and whenever the server
+  // reports a missing key (401 from any /api/ call).
+  useEffect(() => {
+    if (!hasApiKey()) setKeyModalOpen(true);
+    const onRequired = () => setKeyModalOpen(true);
+    window.addEventListener("api-key-required", onRequired);
+    return () => window.removeEventListener("api-key-required", onRequired);
+  }, []);
 
   const activeTabDef = TABS.find(t => t.id === activeTab)!;
 
@@ -102,13 +114,25 @@ export default function App() {
             </div>
           </div>
 
-          {/* Active tab indicator */}
-          <div
-            className={`hidden sm:flex items-center gap-1.5 text-[11px] font-semibold ${activeTabDef.activeText} px-3 py-1.5 rounded-lg border ${activeTabDef.activeBg}`}
-            style={{ borderColor: `${activeTabDef.accentHex}35` }}
-          >
-            <activeTabDef.icon className="w-3.5 h-3.5" />
-            {activeTabDef.label}
+          {/* Right side: API key + active tab indicator */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setKeyModalOpen(true)}
+              className={`flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg border transition cursor-pointer ${hasApiKey() ? "text-emerald-400 bg-emerald-950/20 border-emerald-900/50 hover:border-emerald-700/60" : "text-amber-400 bg-amber-950/20 border-amber-900/50 hover:border-amber-700/60"}`}
+              title={hasApiKey() ? "API key set — click to change" : "Add your free Gemini API key"}
+            >
+              <KeyRound className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{hasApiKey() ? "API Key" : "Add API Key"}</span>
+              <span className={`w-1.5 h-1.5 rounded-full ${hasApiKey() ? "bg-emerald-400" : "bg-amber-400"}`} />
+            </button>
+
+            <div
+              className={`hidden sm:flex items-center gap-1.5 text-[11px] font-semibold ${activeTabDef.activeText} px-3 py-1.5 rounded-lg border ${activeTabDef.activeBg}`}
+              style={{ borderColor: `${activeTabDef.accentHex}35` }}
+            >
+              <activeTabDef.icon className="w-3.5 h-3.5" />
+              {activeTabDef.label}
+            </div>
           </div>
         </div>
       </header>
@@ -190,6 +214,8 @@ export default function App() {
         <p>AI Prompt Studio · Free AI tools only · Gemini, NotebookLM, Claude, Perplexity, Mistral, DeepSeek, Grok</p>
         <p className="mt-1 text-slate-800">No data stored externally · Powered by Gemini API on server</p>
       </footer>
+
+      <ApiKeyModal open={keyModalOpen} onClose={() => setKeyModalOpen(false)} />
     </div>
   );
 }
