@@ -183,7 +183,11 @@ export const CAREERS: CareerPath[] = [
 export const CAREER_FIELDS = Array.from(new Set(CAREERS.map(c => c.field)));
 
 // ─── RESOURCES ───────────────────────────────────────────────────────────────
-export type ResourceCategory = "Learn" | "Practice" | "Free Books" | "Tools" | "Jobs & Internships" | "Problem-Solvers";
+export type ResourceCategory =
+  | "Learn" | "Courses" | "Practice"
+  | "Commerce & Finance" | "Arts & Humanities" | "Research"
+  | "Archives & Libraries" | "Tools" | "Utilities"
+  | "Jobs & Internships" | "Startup" | "Problem-Solvers";
 export type ResourceCost = "free" | "freemium" | "free-audit" | "paid";
 
 export interface Resource {
@@ -199,44 +203,114 @@ export interface Resource {
 }
 
 const Y = "2026";
-export const RESOURCES: Resource[] = [
-  // Learn
-  { id: "fcc", name: "freeCodeCamp", url: "https://www.freecodecamp.org", category: "Learn", levels: ["college", "professional"], cost: "free", bestFor: "Hands-on coding & web/data curriculum", reputationNote: "Very widely recommended free coding path for beginners.", asOf: Y },
-  { id: "khan", name: "Khan Academy", url: "https://www.khanacademy.org", category: "Learn", levels: ["school", "college"], cost: "free", bestFor: "School maths & science from scratch", reputationNote: "Long-standing go-to for school-level foundations.", asOf: Y },
-  { id: "mitocw", name: "MIT OpenCourseWare", url: "https://ocw.mit.edu", category: "Learn", levels: ["college", "professional"], cost: "free", bestFor: "Full university course materials, free", asOf: Y },
-  { id: "nptel", name: "NPTEL / SWAYAM", url: "https://nptel.ac.in", category: "Learn", levels: ["college", "competitive"], cost: "free", bestFor: "Indian university courses + recognised certificates", reputationNote: "Govt-backed (India); certificates via paid exam optional.", asOf: Y },
-  { id: "cs50", name: "CS50 (Harvard)", url: "https://cs50.harvard.edu", category: "Learn", levels: ["college"], cost: "free", bestFor: "The classic intro to computer science", asOf: Y },
-  { id: "coursera", name: "Coursera", url: "https://www.coursera.org", category: "Learn", levels: ["college", "professional"], cost: "free-audit", bestFor: "University courses — audit free, certificate paid", asOf: Y },
-  { id: "mdn", name: "MDN Web Docs", url: "https://developer.mozilla.org", category: "Learn", levels: ["college", "professional"], cost: "free", bestFor: "Authoritative web-development reference", asOf: Y },
-  { id: "fcc-yt", name: "freeCodeCamp (YouTube)", url: "https://www.youtube.com/c/Freecodecamp", category: "Learn", levels: ["college", "professional"], cost: "free", bestFor: "Full-length free course videos", reputationNote: "YouTube picks are subjective — this is one of the most established channels.", asOf: Y },
+const ALL: StudentLevel[] = ["school", "college", "competitive", "professional"];
 
-  // Practice
-  { id: "leetcode", name: "LeetCode", url: "https://leetcode.com", category: "Practice", levels: ["college", "professional"], cost: "freemium", bestFor: "Coding-interview problem practice", asOf: Y },
+export const RESOURCES: Resource[] = [
+  // ── Learn ────────────────────────────────────────────────────────────────
+  { id: "fcc", name: "freeCodeCamp", url: "https://www.freecodecamp.org", category: "Learn", levels: ["college", "professional"], cost: "free", bestFor: "Hands-on coding & web/data curriculum", reputationNote: "Very widely recommended free coding path.", asOf: Y },
+  { id: "khan", name: "Khan Academy", url: "https://www.khanacademy.org", category: "Learn", levels: ["school", "college"], cost: "free", bestFor: "School maths & science from scratch", reputationNote: "Long-standing go-to for school foundations.", asOf: Y },
+  { id: "mitocw", name: "MIT OpenCourseWare", url: "https://ocw.mit.edu", category: "Learn", levels: ["college", "professional"], cost: "free", bestFor: "Full university course materials, free", asOf: Y },
+  { id: "mdn", name: "MDN Web Docs", url: "https://developer.mozilla.org", category: "Learn", levels: ["college", "professional"], cost: "free", bestFor: "Authoritative web-development reference", asOf: Y },
+  { id: "odin", name: "The Odin Project", url: "https://www.theodinproject.com", category: "Learn", levels: ["college", "professional"], cost: "free", bestFor: "Full open-source web-dev path", asOf: Y },
+  { id: "fcc-yt", name: "freeCodeCamp (YouTube)", url: "https://www.youtube.com/c/Freecodecamp", category: "Learn", levels: ["college", "professional"], cost: "free", bestFor: "Full-length free course videos", reputationNote: "YouTube picks are subjective — one of the most established channels.", asOf: Y },
+
+  // ── Courses (platforms & aggregators) ──────────────────────────────────────
+  { id: "nptel", name: "NPTEL / SWAYAM", url: "https://nptel.ac.in", category: "Courses", levels: ["college", "competitive"], cost: "free", bestFor: "Indian university courses + recognised certificates", reputationNote: "Govt-backed (India); certificate via paid exam optional.", asOf: Y },
+  { id: "cs50", name: "CS50 (Harvard)", url: "https://cs50.harvard.edu", category: "Courses", levels: ["college"], cost: "free", bestFor: "The classic intro to computer science", asOf: Y },
+  { id: "coursera", name: "Coursera", url: "https://www.coursera.org", category: "Courses", levels: ["college", "professional"], cost: "free-audit", bestFor: "University courses — audit free, certificate paid", asOf: Y },
+  { id: "edx", name: "edX", url: "https://www.edx.org", category: "Courses", levels: ["college", "professional"], cost: "free-audit", bestFor: "University courses — audit free", asOf: Y },
+  { id: "classcentral", name: "Class Central", url: "https://www.classcentral.com", category: "Courses", levels: ALL, cost: "free", bestFor: "Search engine for free online courses", reputationNote: "Aggregates & ranks courses across providers.", asOf: Y },
+  { id: "alison", name: "Alison", url: "https://alison.com", category: "Courses", levels: ["college", "professional"], cost: "freemium", bestFor: "Free certificate courses", asOf: Y },
+
+  // ── Practice ───────────────────────────────────────────────────────────────
+  { id: "leetcode", name: "LeetCode", url: "https://leetcode.com", category: "Practice", levels: ["college", "professional"], cost: "freemium", bestFor: "Coding-interview practice", asOf: Y },
   { id: "kaggle", name: "Kaggle", url: "https://www.kaggle.com", category: "Practice", levels: ["college", "professional"], cost: "free", bestFor: "Datasets, notebooks & data-science competitions", asOf: Y },
   { id: "hackerrank", name: "HackerRank", url: "https://www.hackerrank.com", category: "Practice", levels: ["college", "professional"], cost: "freemium", bestFor: "Skill drills & coding assessments", asOf: Y },
+  { id: "exercism", name: "Exercism", url: "https://exercism.org", category: "Practice", levels: ["college", "professional"], cost: "free", bestFor: "Mentored coding exercises, 70+ languages", asOf: Y },
 
-  // Free Books (legal, non-piracy)
-  { id: "openstax", name: "OpenStax", url: "https://openstax.org", category: "Free Books", levels: ["school", "college"], cost: "free", bestFor: "Peer-reviewed, openly-licensed textbooks", reputationNote: "Legally free (Rice University) — no piracy.", asOf: Y },
-  { id: "gutenberg", name: "Project Gutenberg", url: "https://www.gutenberg.org", category: "Free Books", levels: ["school", "college", "professional"], cost: "free", bestFor: "Public-domain classic books", reputationNote: "Legally free public-domain works.", asOf: Y },
+  // ── Commerce & Finance ─────────────────────────────────────────────────────
+  { id: "varsity", name: "Zerodha Varsity", url: "https://zerodha.com/varsity", category: "Commerce & Finance", levels: ["college", "competitive", "professional"], cost: "free", bestFor: "Markets, trading & finance — beginner to advanced (India)", reputationNote: "Widely praised free Indian finance curriculum.", asOf: Y },
+  { id: "investopedia", name: "Investopedia", url: "https://www.investopedia.com", category: "Commerce & Finance", levels: ["college", "professional"], cost: "free", bestFor: "Finance & investing concepts dictionary", asOf: Y },
+  { id: "cfi", name: "Corporate Finance Institute", url: "https://corporatefinanceinstitute.com", category: "Commerce & Finance", levels: ["college", "professional"], cost: "freemium", bestFor: "Financial modelling & valuation resources", asOf: Y },
+  { id: "screener", name: "Screener.in", url: "https://www.screener.in", category: "Commerce & Finance", levels: ["college", "professional"], cost: "freemium", bestFor: "Free fundamental data on Indian companies", reputationNote: "Popular for equity research in India.", asOf: Y },
+  { id: "icai-bos", name: "ICAI Board of Studies", url: "https://www.icai.org", category: "Commerce & Finance", levels: ["competitive"], cost: "free", bestFor: "Official CA study material & past papers", asOf: Y },
+  { id: "icsi-bos", name: "ICSI Academic Portal", url: "https://www.icsi.edu", category: "Commerce & Finance", levels: ["competitive"], cost: "free", bestFor: "Official CS study material", asOf: Y },
+  { id: "rbi", name: "RBI", url: "https://www.rbi.org.in", category: "Commerce & Finance", levels: ["college", "competitive", "professional"], cost: "free", bestFor: "Central-bank data, circulars & reports (India)", asOf: Y },
+  { id: "nse", name: "NSE India", url: "https://www.nseindia.com", category: "Commerce & Finance", levels: ["college", "professional"], cost: "free", bestFor: "Live market data & filings", asOf: Y },
+  { id: "mca", name: "MCA (Corporate Affairs)", url: "https://www.mca.gov.in", category: "Commerce & Finance", levels: ["competitive", "professional"], cost: "free", bestFor: "Company filings & corporate law (India)", asOf: Y },
 
-  // Tools
+  // ── Arts & Humanities ──────────────────────────────────────────────────────
+  { id: "googlearts", name: "Google Arts & Culture", url: "https://artsandculture.google.com", category: "Arts & Humanities", levels: ALL, cost: "free", bestFor: "Explore art & museum collections worldwide", asOf: Y },
+  { id: "met", name: "The Met Open Access", url: "https://www.metmuseum.org/art/collection", category: "Arts & Humanities", levels: ALL, cost: "free", bestFor: "Free, openly-licensed artwork images", reputationNote: "Open-access works free to use.", asOf: Y },
+  { id: "smithsonian", name: "Smithsonian Open Access", url: "https://www.si.edu/openaccess", category: "Arts & Humanities", levels: ALL, cost: "free", bestFor: "Millions of free open-access cultural images", asOf: Y },
+  { id: "wikiart", name: "WikiArt", url: "https://www.wikiart.org", category: "Arts & Humanities", levels: ["school", "college"], cost: "free", bestFor: "Visual art encyclopedia", asOf: Y },
+  { id: "poetryfound", name: "Poetry Foundation", url: "https://www.poetryfoundation.org", category: "Arts & Humanities", levels: ["school", "college"], cost: "free", bestFor: "Vast free poetry archive", asOf: Y },
+
+  // ── Research ───────────────────────────────────────────────────────────────
+  { id: "scholar", name: "Google Scholar", url: "https://scholar.google.com", category: "Research", levels: ["college", "professional"], cost: "free", bestFor: "Search scholarly papers & citations", asOf: Y },
+  { id: "arxiv", name: "arXiv", url: "https://arxiv.org", category: "Research", levels: ["college", "professional"], cost: "free", bestFor: "Open-access preprints (STEM)", asOf: Y },
+  { id: "doaj", name: "DOAJ", url: "https://doaj.org", category: "Research", levels: ["college", "professional"], cost: "free", bestFor: "Directory of open-access journals", asOf: Y },
+  { id: "pubmed", name: "PubMed", url: "https://pubmed.ncbi.nlm.nih.gov", category: "Research", levels: ["college", "professional"], cost: "free", bestFor: "Biomedical & life-sciences literature", asOf: Y },
+  { id: "ssrn", name: "SSRN", url: "https://www.ssrn.com", category: "Research", levels: ["college", "professional"], cost: "free", bestFor: "Social-science & finance working papers", asOf: Y },
+  { id: "semanticscholar", name: "Semantic Scholar", url: "https://www.semanticscholar.org", category: "Research", levels: ["college", "professional"], cost: "free", bestFor: "AI-powered paper search", asOf: Y },
+  { id: "connectedpapers", name: "Connected Papers", url: "https://www.connectedpapers.com", category: "Research", levels: ["college", "professional"], cost: "freemium", bestFor: "Visual map of related papers", asOf: Y },
+  { id: "core", name: "CORE", url: "https://core.ac.uk", category: "Research", levels: ["college", "professional"], cost: "free", bestFor: "Aggregator of open-access research", asOf: Y },
+
+  // ── Archives & Libraries (legal, non-piracy) ───────────────────────────────
+  { id: "archiveorg", name: "Internet Archive", url: "https://archive.org", category: "Archives & Libraries", levels: ALL, cost: "free", bestFor: "Books, audio, video, web & software archive", reputationNote: "Legal non-profit archive & library.", asOf: Y },
+  { id: "openlibrary", name: "Open Library", url: "https://openlibrary.org", category: "Archives & Libraries", levels: ALL, cost: "free", bestFor: "Borrow digital books (controlled lending)", reputationNote: "Internet Archive project — legal lending.", asOf: Y },
+  { id: "ndli", name: "National Digital Library of India", url: "https://ndl.iitkgp.ac.in", category: "Archives & Libraries", levels: ALL, cost: "free", bestFor: "Govt-run library across all levels & subjects (India)", asOf: Y },
+  { id: "hathitrust", name: "HathiTrust", url: "https://www.hathitrust.org", category: "Archives & Libraries", levels: ["college", "professional"], cost: "free", bestFor: "Digitised academic library collections", asOf: Y },
+  { id: "doab", name: "Directory of Open Access Books", url: "https://www.doabooks.org", category: "Archives & Libraries", levels: ["college", "professional"], cost: "free", bestFor: "Peer-reviewed open-access books", asOf: Y },
+  { id: "openstax", name: "OpenStax", url: "https://openstax.org", category: "Archives & Libraries", levels: ["school", "college"], cost: "free", bestFor: "Peer-reviewed, openly-licensed textbooks", reputationNote: "Legally free (Rice University).", asOf: Y },
+  { id: "gutenberg", name: "Project Gutenberg", url: "https://www.gutenberg.org", category: "Archives & Libraries", levels: ALL, cost: "free", bestFor: "70,000+ public-domain books", reputationNote: "Legally free public-domain works.", asOf: Y },
+  { id: "loc", name: "Library of Congress", url: "https://www.loc.gov", category: "Archives & Libraries", levels: ALL, cost: "free", bestFor: "Huge digital collections & primary sources", asOf: Y },
+
+  // ── Tools (study & productivity) ───────────────────────────────────────────
   { id: "anki", name: "Anki", url: "https://apps.ankiweb.net", category: "Tools", levels: ["school", "college", "competitive"], cost: "free", bestFor: "Spaced-repetition flashcards", asOf: Y },
   { id: "notion", name: "Notion", url: "https://www.notion.so", category: "Tools", levels: ["college", "professional"], cost: "freemium", bestFor: "Notes, planning & organisation", asOf: Y },
+  { id: "obsidian", name: "Obsidian", url: "https://obsidian.md", category: "Tools", levels: ["college", "professional"], cost: "freemium", bestFor: "Local-first linked notes / knowledge base", asOf: Y },
   { id: "zotero", name: "Zotero", url: "https://www.zotero.org", category: "Tools", levels: ["college", "professional"], cost: "free", bestFor: "Reference & citation manager", asOf: Y },
   { id: "overleaf", name: "Overleaf", url: "https://www.overleaf.com", category: "Tools", levels: ["college", "professional"], cost: "freemium", bestFor: "LaTeX writing for reports & theses", asOf: Y },
   { id: "desmos", name: "Desmos", url: "https://www.desmos.com", category: "Tools", levels: ["school", "college"], cost: "free", bestFor: "Free graphing calculator", asOf: Y },
+  { id: "geogebra", name: "GeoGebra", url: "https://www.geogebra.org", category: "Tools", levels: ["school", "college"], cost: "free", bestFor: "Interactive geometry, algebra & calculus", asOf: Y },
+  { id: "excalidraw", name: "Excalidraw", url: "https://excalidraw.com", category: "Tools", levels: ALL, cost: "free", bestFor: "Quick hand-drawn-style diagrams", asOf: Y },
 
-  // Jobs & Internships
-  { id: "internshala", name: "Internshala", url: "https://internshala.com", category: "Jobs & Internships", levels: ["college", "professional"], cost: "freemium", bestFor: "Internships & entry roles (India-focused)", asOf: Y },
+  // ── Utilities (convenient internet tools) ──────────────────────────────────
+  { id: "removebg", name: "remove.bg", url: "https://www.remove.bg", category: "Utilities", levels: ALL, cost: "freemium", bestFor: "One-click background removal", asOf: Y },
+  { id: "photopea", name: "Photopea", url: "https://www.photopea.com", category: "Utilities", levels: ALL, cost: "free", bestFor: "Free Photoshop-style editor in the browser", asOf: Y },
+  { id: "canva", name: "Canva", url: "https://www.canva.com", category: "Utilities", levels: ALL, cost: "freemium", bestFor: "Design + passport-photo & resume templates", reputationNote: "Has passport-size photo templates.", asOf: Y },
+  { id: "iloveimg", name: "iLoveIMG", url: "https://www.iloveimg.com", category: "Utilities", levels: ALL, cost: "freemium", bestFor: "Resize, crop, compress & convert images", asOf: Y },
+  { id: "tinypng", name: "TinyPNG", url: "https://tinypng.com", category: "Utilities", levels: ALL, cost: "free", bestFor: "Compress PNG/JPG without quality loss", asOf: Y },
+  { id: "ilovepdf", name: "iLovePDF", url: "https://www.ilovepdf.com", category: "Utilities", levels: ALL, cost: "freemium", bestFor: "Merge, split, compress & convert PDFs", asOf: Y },
+  { id: "cloudconvert", name: "CloudConvert", url: "https://cloudconvert.com", category: "Utilities", levels: ALL, cost: "freemium", bestFor: "Convert almost any file format", asOf: Y },
+  { id: "hemingway", name: "Hemingway Editor", url: "https://hemingwayapp.com", category: "Utilities", levels: ["school", "college", "professional"], cost: "free", bestFor: "Make writing clearer & more readable", asOf: Y },
+
+  // ── Jobs & Internships ─────────────────────────────────────────────────────
+  { id: "internshala", name: "Internshala", url: "https://internshala.com", category: "Jobs & Internships", levels: ["college", "professional"], cost: "freemium", bestFor: "Internships & entry roles (India)", asOf: Y },
+  { id: "unstop", name: "Unstop", url: "https://unstop.com", category: "Jobs & Internships", levels: ["college", "professional"], cost: "free", bestFor: "Competitions, hackathons & internships (India)", asOf: Y },
   { id: "linkedin", name: "LinkedIn", url: "https://www.linkedin.com", category: "Jobs & Internships", levels: ["college", "professional"], cost: "freemium", bestFor: "Networking + job listings", asOf: Y },
   { id: "wellfound", name: "Wellfound", url: "https://wellfound.com", category: "Jobs & Internships", levels: ["college", "professional"], cost: "free", bestFor: "Startup jobs & internships", asOf: Y },
+  { id: "naukri", name: "Naukri", url: "https://www.naukri.com", category: "Jobs & Internships", levels: ["professional"], cost: "freemium", bestFor: "Large India job board", asOf: Y },
+  { id: "indeed", name: "Indeed", url: "https://www.indeed.com", category: "Jobs & Internships", levels: ["professional"], cost: "free", bestFor: "Global job aggregator", asOf: Y },
 
-  // Problem-Solvers
+  // ── Startup ────────────────────────────────────────────────────────────────
+  { id: "ycss", name: "YC Startup School", url: "https://www.startupschool.org", category: "Startup", levels: ["college", "professional"], cost: "free", bestFor: "Free startup-building curriculum (Y Combinator)", asOf: Y },
+  { id: "producthunt", name: "Product Hunt", url: "https://www.producthunt.com", category: "Startup", levels: ["college", "professional"], cost: "free", bestFor: "Discover & launch new products", asOf: Y },
+  { id: "indiehackers", name: "Indie Hackers", url: "https://www.indiehackers.com", category: "Startup", levels: ["professional"], cost: "free", bestFor: "Stories & community for solo founders", asOf: Y },
+  { id: "huggingface", name: "Hugging Face", url: "https://huggingface.co", category: "Startup", levels: ["college", "professional"], cost: "freemium", bestFor: "Build, host & ship AI apps & models", asOf: Y },
+
+  // ── Problem-Solvers ────────────────────────────────────────────────────────
   { id: "stackoverflow", name: "Stack Overflow", url: "https://stackoverflow.com", category: "Problem-Solvers", levels: ["college", "professional"], cost: "free", bestFor: "Q&A for specific coding problems", asOf: Y },
   { id: "wolfram", name: "Wolfram Alpha", url: "https://www.wolframalpha.com", category: "Problem-Solvers", levels: ["school", "college"], cost: "freemium", bestFor: "Step-by-step maths & computation", asOf: Y },
+  { id: "symbolab", name: "Symbolab", url: "https://www.symbolab.com", category: "Problem-Solvers", levels: ["school", "college"], cost: "freemium", bestFor: "Step-by-step maths solver", asOf: Y },
+  { id: "regex101", name: "regex101", url: "https://regex101.com", category: "Problem-Solvers", levels: ["college", "professional"], cost: "free", bestFor: "Build & debug regular expressions", asOf: Y },
 ];
 
-export const RESOURCE_CATEGORIES: ResourceCategory[] = ["Learn", "Practice", "Free Books", "Tools", "Jobs & Internships", "Problem-Solvers"];
+export const RESOURCE_CATEGORIES: ResourceCategory[] = [
+  "Learn", "Courses", "Practice", "Commerce & Finance", "Arts & Humanities",
+  "Research", "Archives & Libraries", "Tools", "Utilities", "Jobs & Internships", "Startup", "Problem-Solvers",
+];
 
 // ─── matching helper for Career Finder ─────────────────────────────────────────
 export function matchCareers(pursuit: string): CareerPath[] {
