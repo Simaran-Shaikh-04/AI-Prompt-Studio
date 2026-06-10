@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Bot, Sparkles, Link2, GraduationCap, Image as ImageIcon, Library, AlertTriangle, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 import PromptForge from "./components/PromptForge";
@@ -59,7 +60,7 @@ const TABS: {
     underlineBg: "bg-rose-500",
     accentHex: "#F43F5E"
   },
-   {
+  {
     id: "resources",
     label: "Resource Hub",
     icon: Library,
