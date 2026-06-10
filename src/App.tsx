@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bot, Sparkles, Link2, GraduationCap, Image as ImageIcon, Library, KeyRound, AlertTriangle, X } from "lucide-react";
+import { Bot, Sparkles, Link2, GraduationCap, Image as ImageIcon, Library, KeyRound, HelpCircle, AlertTriangle, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 import PromptForge from "./components/PromptForge";
@@ -7,10 +7,11 @@ import ContextBridge from "./components/ContextBridge";
 import StudentSuite from "./components/StudentSuite";
 import ImagePromptStudio from "./components/ImagePromptStudio";
 import ResourceHub from "./components/ResourceHub";
+import UserManual from "./components/UserManual";
 import ApiKeyModal from "./components/ApiKeyModal";
 import { hasApiKey } from "./lib/api";
 
-type MainTab = "forge" | "bridge" | "student" | "image" | "resources";
+type MainTab = "forge" | "bridge" | "student" | "image" | "resources" | "guide";
 
 const TABS: {
   id: MainTab;
@@ -71,6 +72,16 @@ const TABS: {
     activeBg: "bg-amber-950/20",
     underlineBg: "bg-amber-500",
     accentHex: "#F59E0B"
+  },
+  {
+    id: "guide",
+    label: "Guide",
+    icon: HelpCircle,
+    desc: "How to use the app",
+    activeText: "text-slate-300",
+    activeBg: "bg-slate-800/30",
+    underlineBg: "bg-slate-400",
+    accentHex: "#94A3B8"
   }
 ];
 
@@ -205,6 +216,7 @@ export default function App() {
             {activeTab === "student"   && <StudentSuite />}
             {activeTab === "image"     && <ImagePromptStudio />}
             {activeTab === "resources" && <ResourceHub />}
+            {activeTab === "guide"     && <UserManual />}
           </motion.div>
         </AnimatePresence>
       </main>
