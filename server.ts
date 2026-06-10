@@ -10,16 +10,21 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 app.use(express.json({ limit: "50mb" }));
 
-const apiKey = process.env.GEMINI_API_KEY;
-const ai = new GoogleGenAI({
-  apiKey: apiKey || "MOCK_KEY_FOR_LOCAL_DEV",
-  httpOptions: { headers: { "User-Agent": "aistudio-build" } }
-});
+// Each request carries the user's own Gemini key in the "x-api-key" header.
+// The server never uses its own key — the user's quota is used, not yours.
+const getUserKey = (req: express.Request): string =>
+  (req.header("x-api-key") || "").trim();
+
+const getAI = (req: express.Request) =>
+  new GoogleGenAI({
+    apiKey: getUserKey(req),
+    httpOptions: { headers: { "User-Agent": "aistudio-build" } }
+  });
 
 const checkApiKey = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  if (!process.env.GEMINI_API_KEY) {
-    return res.status(500).json({
-      error: "Missing GEMINI_API_KEY. Open Settings > Secrets and add your Gemini API Key."
+  if (!getUserKey(req)) {
+    return res.status(401).json({
+      error: "No API key found. Click the 'API Key' button at the top of the app and paste your free Google Gemini key."
     });
   }
   next();
@@ -38,7 +43,7 @@ app.post("/api/generate-questions", checkApiKey, async (req, res) => {
 
     const prompt = `Task / App Idea: "${appIdea}"\n\nGenerate exactly 4 essential reflective questions to narrow down the technical scope, methodology, or academic details.`;
 
-    const response = await ai.models.generateContent({
+    const response = await getAI(req).models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
       config: {
@@ -109,7 +114,7 @@ app.post("/api/generate-prompt", checkApiKey, async (req, res) => {
       });
     }
 
-    const response = await ai.models.generateContent({
+    const response = await getAI(req).models.generateContent({
       model: "gemini-2.5-flash",
       contents: [{ role: "user", parts: contentParts }],
       config: {
@@ -225,7 +230,7 @@ app.post("/api/forge-prompt", checkApiKey, async (req, res) => {
       });
     }
 
-    const response = await ai.models.generateContent({
+    const response = await getAI(req).models.generateContent({
       model: "gemini-2.5-flash",
       contents: [{ role: "user", parts: contentParts }],
       config: {
@@ -350,7 +355,7 @@ app.post("/api/bridge-context", checkApiKey, async (req, res) => {
       });
     }
 
-    const response = await ai.models.generateContent({
+    const response = await getAI(req).models.generateContent({
       model: "gemini-2.5-flash",
       contents: [{ role: "user", parts: contentParts }],
       config: {
@@ -407,7 +412,7 @@ app.post("/api/enhance-image", checkApiKey, async (req, res) => {
       `weighted = comma tokens, optional (token:1.2) weights, then a separate line beginning "Negative prompt:".\n` +
       `Return ONLY the final prompt text.`;
 
-    const response = await ai.models.generateContent({
+    const response = await getAI(req).models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
       config: { systemInstruction }
