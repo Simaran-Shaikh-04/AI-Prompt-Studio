@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { Bot, Sparkles, Link2, GraduationCap, Image as ImageIcon, AlertTriangle, X } from "lucide-react";
+import { Bot, Sparkles, Link2, GraduationCap, Image as ImageIcon, Compass, Library, AlertTriangle, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 import PromptForge from "./components/PromptForge";
 import ContextBridge from "./components/ContextBridge";
 import StudentSuite from "./components/StudentSuite";
 import ImagePromptStudio from "./components/ImagePromptStudio";
+import CareerFinder from "./components/CareerFinder";
+import ResourceHub from "./components/ResourceHub";
 
-type MainTab = "forge" | "bridge" | "student" | "image";
+type MainTab = "forge" | "bridge" | "student" | "image" | "career" | "resources";
 
 const TABS: {
   id: MainTab;
@@ -53,11 +55,31 @@ const TABS: {
     id: "image",
     label: "Image Studio",
     icon: ImageIcon,
-    desc: "Midjourney / Firefly / Imagen",
+    desc: "Gemini / DALL·E / FLUX / Midjourney / SD",
     activeText: "text-rose-400",
     activeBg: "bg-rose-950/20",
     underlineBg: "bg-rose-500",
     accentHex: "#F43F5E"
+  },
+  {
+    id: "career",
+    label: "Career Finder",
+    icon: Compass,
+    desc: "Source-backed career guidance",
+    activeText: "text-sky-400",
+    activeBg: "bg-sky-950/20",
+    underlineBg: "bg-sky-500",
+    accentHex: "#0EA5E9"
+  },
+  {
+    id: "resources",
+    label: "Resource Hub",
+    icon: Library,
+    desc: "Trusted free-first resources",
+    activeText: "text-amber-400",
+    activeBg: "bg-amber-950/20",
+    underlineBg: "bg-amber-500",
+    accentHex: "#F59E0B"
   }
 ];
 
@@ -91,7 +113,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Active tab indicator */}
           {/* Active tab indicator */}
           <div
             className={`hidden sm:flex items-center gap-1.5 text-[11px] font-semibold ${activeTabDef.activeText} px-3 py-1.5 rounded-lg border ${activeTabDef.activeBg}`}
@@ -166,10 +187,12 @@ export default function App() {
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
           >
-            {activeTab === "forge"   && <PromptForge />}
-            {activeTab === "bridge"  && <ContextBridge />}
-            {activeTab === "student" && <StudentSuite />}
-            {activeTab === "image"   && <ImagePromptStudio />}
+            {activeTab === "forge"     && <PromptForge />}
+            {activeTab === "bridge"    && <ContextBridge />}
+            {activeTab === "student"   && <StudentSuite />}
+            {activeTab === "image"     && <ImagePromptStudio />}
+            {activeTab === "career"    && <CareerFinder />}
+            {activeTab === "resources" && <ResourceHub />}
           </motion.div>
         </AnimatePresence>
       </main>

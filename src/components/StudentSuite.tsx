@@ -3,12 +3,15 @@ import {
   Sparkles, Copy, Check, RotateCcw, Layers, Brain, Cpu, Zap,
   Send, ArrowRight, ArrowLeft, Clock, Trash2, Download,
   AlertTriangle, Lightbulb, FileText, Paperclip, UploadCloud,
-  FileCheck, BookOpen, GraduationCap, X
+  FileCheck, BookOpen, GraduationCap, X,
+  Target, Rocket, PenLine, FlaskConical, Presentation, Landmark, Globe, Newspaper
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Markdown from "react-markdown";
 import { Question, OptimizationProfile, PromptAnalysis, HistoryItem, GenerationState, Attachment } from "../types";
-import { OPTIMIZATION_PROFILES, STUDENT_PRESETS } from "../data";
+import { OPTIMIZATION_PROFILES } from "../data";
+import { STUDENT_PRESETS, STUDENT_LEVELS, fillPresetTemplate } from "../data/studentPresets";
+import type { StudentLevel } from "../data/studentPresets";
 import NotebookLMSuite from "./NotebookLMSuite";
 
 type StudentTab = "prompts" | "notebooklm";
@@ -21,8 +24,16 @@ function renderProfileIcon(icon: string) {
   return <Brain className={cls} />;
 }
 
+const PRESET_ICONS: Record<string, any> = {
+  BookOpen, GraduationCap, Target, Rocket, Lightbulb, PenLine,
+  FileCheck, FlaskConical, Presentation, Landmark, Globe, Newspaper, Brain, FileText,
+};
+
 export default function StudentSuite() {
   const [studentTab, setStudentTab] = useState<StudentTab>("prompts");
+  const [activeLevel, setActiveLevel] = useState<StudentLevel>("college");
+  const [activePresetId, setActivePresetId] = useState<string | null>(null);
+  const [tplCopied, setTplCopied] = useState(false);
 
   const [history, setHistory] = useState<HistoryItem[]>(() => {
     try { return JSON.parse(localStorage.getItem("student_prompt_history") || "[]"); }
@@ -262,24 +273,66 @@ export default function StudentSuite() {
                     className="w-full h-40 bg-[#080C16] border border-[#1A2138] focus:border-emerald-700/60 rounded-xl p-4 text-sm text-slate-200 placeholder-slate-600 focus:outline-none resize-none"
                   />
 
-                  {/* Student preset cards */}
+                  {/* Level selector + structured presets */}
                   <div className="space-y-3 border-t border-[#1A2138] pt-4">
                     <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                      <Lightbulb className="w-3.5 h-3.5 text-amber-400" /> Quick Presets
+                      <Lightbulb className="w-3.5 h-3.5 text-amber-400" /> Choose your level, then a structured preset
                     </span>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                      {STUDENT_PRESETS.map(item => {
-                        const isSelected = state.appIdea === item.defaultIdea;
+
+                    <div className="flex flex-wrap gap-1.5">
+                      {STUDENT_LEVELS.map(lvl => {
+                        const Icon = PRESET_ICONS[lvl.iconName] || Lightbulb;
+                        const on = activeLevel === lvl.id;
+                        return (
+                          <button key={lvl.id} title={lvl.blurb}
+                            onClick={() => { setActiveLevel(lvl.id); setActivePresetId(null); }}
+                            className={`flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg border transition cursor-pointer ${on ? lvl.activeClass : "bg-[#080C16] border-[#1A2138] text-slate-500 hover:text-slate-300 hover:border-slate-700"}`}>
+                            <Icon className="w-3.5 h-3.5" /> {lvl.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-[10px] text-slate-500">{STUDENT_LEVELS.find(l => l.id === activeLevel)?.blurb}</p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {STUDENT_PRESETS.filter(p => p.level === activeLevel).map(item => {
+                        const Icon = PRESET_ICONS[item.iconName] || Lightbulb;
+                        const isSelected = activePresetId === item.id;
                         return (
                           <button key={item.id}
-                            onClick={() => { setState(prev => ({ ...prev, appIdea: item.defaultIdea, questions: item.questions, currentQuestionIndex: 0, answers: {} })); setErrorMessage(null); }}
+                            onClick={() => {
+                              setState(prev => ({ ...prev, appIdea: item.defaultIdea, questions: item.questions, currentQuestionIndex: 0, answers: {} }));
+                              setActivePresetId(item.id); setErrorMessage(null);
+                            }}
                             className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${isSelected ? "bg-emerald-950/20 border-emerald-700/50" : "bg-[#080C16] border-[#1A2138] hover:border-slate-700 hover:bg-[#0D1225]"}`}>
-                            <span className="text-xs font-semibold text-slate-200 block mb-0.5">{item.title}</span>
+                            <span className="text-xs font-semibold text-slate-200 flex items-center gap-1.5 mb-0.5">
+                              <Icon className="w-3.5 h-3.5 text-slate-400 shrink-0" /> {item.title}
+                            </span>
                             <p className="text-[10px] text-slate-500 line-clamp-2 leading-relaxed">{item.description}</p>
                           </button>
                         );
                       })}
                     </div>
+
+                    {activePresetId && (() => {
+                      const preset = STUDENT_PRESETS.find(p => p.id === activePresetId)!;
+                      const filled = fillPresetTemplate(preset, state.appIdea, state.answers);
+                      return (
+                        <div className="bg-[#080C16] border border-[#1A2138] rounded-xl p-3.5 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400 flex items-center gap-1">
+                              <FileText className="w-3 h-3" /> Structured template — copy &amp; use in any AI
+                            </span>
+                            <button onClick={() => { navigator.clipboard.writeText(filled); setTplCopied(true); setTimeout(() => setTplCopied(false), 2000); }}
+                              className={`flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded border transition cursor-pointer ${tplCopied ? "bg-emerald-950/40 border-emerald-700/40 text-emerald-400" : "bg-[#0D1225] border-[#1A2138] text-slate-300 hover:text-white"}`}>
+                              {tplCopied ? <><Check className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> Copy</>}
+                            </button>
+                          </div>
+                          <pre className="text-[10px] text-slate-400 whitespace-pre-wrap font-mono leading-relaxed max-h-44 overflow-y-auto">{filled}</pre>
+                          <p className="text-[9px] text-slate-600">Placeholders in […] fill automatically as you answer the questions, or edit them yourself.</p>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* File upload */}
