@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { Bot, Sparkles, Link2, GraduationCap, Image as ImageIcon, Compass, Library, AlertTriangle, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 import PromptForge from "./components/PromptForge";
 import ContextBridge from "./components/ContextBridge";
 import StudentSuite from "./components/StudentSuite";
 import ImagePromptStudio from "./components/ImagePromptStudio";
-import CareerFinder from "./components/CareerFinder";
 import ResourceHub from "./components/ResourceHub";
 
 type MainTab = "forge" | "bridge" | "student" | "image" | "career" | "resources";
@@ -61,17 +59,7 @@ const TABS: {
     underlineBg: "bg-rose-500",
     accentHex: "#F43F5E"
   },
-  {
-    id: "career",
-    label: "Career Finder",
-    icon: Compass,
-    desc: "Source-backed career guidance",
-    activeText: "text-sky-400",
-    activeBg: "bg-sky-950/20",
-    underlineBg: "bg-sky-500",
-    accentHex: "#0EA5E9"
-  },
-  {
+   {
     id: "resources",
     label: "Resource Hub",
     icon: Library,
@@ -191,7 +179,6 @@ export default function App() {
             {activeTab === "bridge"    && <ContextBridge />}
             {activeTab === "student"   && <StudentSuite />}
             {activeTab === "image"     && <ImagePromptStudio />}
-            {activeTab === "career"    && <CareerFinder />}
             {activeTab === "resources" && <ResourceHub />}
           </motion.div>
         </AnimatePresence>
