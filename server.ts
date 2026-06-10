@@ -393,6 +393,34 @@ app.post("/api/bridge-context", checkApiKey, async (req, res) => {
   }
 });
 
+// ─── NEW: Enhance an image prompt ─────────────────────────────────────────────
+app.post("/api/enhance-image", checkApiKey, async (req, res) => {
+  try {
+    const { prompt, model, dialect } = req.body;
+    if (!prompt?.trim()) return res.status(400).json({ error: "Prompt is required." });
+
+    const systemInstruction =
+      `You are an expert image-prompt engineer. Rewrite the user's prompt for ${model || "the target model"}, ` +
+      `whose dialect is "${dialect || "natural"}". Preserve intent; improve specificity, structure and clarity.\n` +
+      `Dialect rules: natural = one vivid descriptive paragraph, no keyword stacks, no --parameters, state aspect ratio in words; ` +
+      `tags = comma-separated descriptors with the subject first, then Midjourney params like --ar and --no; ` +
+      `weighted = comma tokens, optional (token:1.2) weights, then a separate line beginning "Negative prompt:".\n` +
+      `Return ONLY the final prompt text.`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: { systemInstruction }
+    });
+
+    const enhanced = response.text?.trim() || "";
+    if (!enhanced) return res.status(500).json({ error: "Empty response." });
+    return res.json({ enhanced });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message || "Failed to enhance prompt." });
+  }
+});
+
 // ─── Serve frontend ───────────────────────────────────────────────────────────
 async function setupServer() {
   if (process.env.NODE_ENV !== "production") {
