@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bot, Sparkles, Link2, GraduationCap, Image as ImageIcon, Library, KeyRound, HelpCircle, AlertTriangle, X } from "lucide-react";
+import { Bot, Sparkles, Link2, GraduationCap, Image as ImageIcon, Library, KeyRound, HelpCircle, History, AlertTriangle, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 import PromptForge from "./components/PromptForge";
@@ -9,7 +9,9 @@ import ImagePromptStudio from "./components/ImagePromptStudio";
 import ResourceHub from "./components/ResourceHub";
 import UserManual from "./components/UserManual";
 import ApiKeyModal from "./components/ApiKeyModal";
+import HistoryDrawer from "./components/HistoryDrawer";
 import { hasApiKey } from "./lib/api";
+import { setCurrentTool } from "./lib/history";
 
 type MainTab = "forge" | "bridge" | "student" | "image" | "resources" | "guide";
 
@@ -89,6 +91,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<MainTab>("forge");
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [keyModalOpen, setKeyModalOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   // Open the setup modal on first visit (no key yet), and whenever the server
   // reports a missing key (401 from any /api/ call).
@@ -98,6 +101,11 @@ export default function App() {
     window.addEventListener("api-key-required", onRequired);
     return () => window.removeEventListener("api-key-required", onRequired);
   }, []);
+
+  // Tag saved prompts with the tool the user is currently on.
+  useEffect(() => {
+    setCurrentTool(TABS.find(t => t.id === activeTab)?.label || "App");
+  }, [activeTab]);
 
   const activeTabDef = TABS.find(t => t.id === activeTab)!;
 
@@ -125,8 +133,17 @@ export default function App() {
             </div>
           </div>
 
-          {/* Right side: API key + active tab indicator */}
+          {/* Right side: history + API key + active tab indicator */}
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setHistoryOpen(true)}
+              className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg border text-slate-400 bg-[#0D1225] border-[#1A2138] hover:text-slate-200 hover:border-slate-700 transition cursor-pointer"
+              title="Prompt history"
+            >
+              <History className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">History</span>
+            </button>
+
             <button
               onClick={() => setKeyModalOpen(true)}
               className={`flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg border transition cursor-pointer ${hasApiKey() ? "text-emerald-400 bg-emerald-950/20 border-emerald-900/50 hover:border-emerald-700/60" : "text-amber-400 bg-amber-950/20 border-amber-900/50 hover:border-amber-700/60"}`}
@@ -228,6 +245,7 @@ export default function App() {
       </footer>
 
       <ApiKeyModal open={keyModalOpen} onClose={() => setKeyModalOpen(false)} />
+      <HistoryDrawer open={historyOpen} onClose={() => setHistoryOpen(false)} />
     </div>
   );
 }
