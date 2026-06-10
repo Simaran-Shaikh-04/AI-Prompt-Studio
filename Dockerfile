@@ -1,38 +1,39 @@
-# --- STAGE 1: BUILD THE APPLICATION ---
-FROM node:20-alpine AS builder
+# ── Stage 1: Build ────────────────────────────────────────────────────────────
+FROM node:20-slim AS builder
 
 WORKDIR /app
 
-# Copy dependency mappings
-COPY package*.json ./
+# Install dependencies first (better layer caching)
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Install all workspace dependencies
-RUN npm ci || npm install
-
-# Copy source configuration files
+# Copy all source files
 COPY . .
 
-# Run production build (compiles the spa client and bundles server.ts)
+# Build frontend (Vite) + bundle server (esbuild)
 RUN npm run build
 
-# --- STAGE 2: PRODUCTION RUNTIME ---
-FROM node:20-alpine AS runner
+# ── Stage 2: Production ───────────────────────────────────────────────────────
+FROM node:20-slim AS runner
 
 WORKDIR /app
 
-# Set production environment variables
-ENV NODE_ENV=production
-ENV PORT=7860
+# Only copy what's needed to run
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/package-lock.json ./package-lock.json
 
-# Custom port configuration for Hugging Face Spaces compatibility
+# Install only production deps
+RUN npm ci --omit=dev
+
+# HuggingFace Spaces requires port 7860
+ENV PORT=7860
+ENV NODE_ENV=production
+
 EXPOSE 7860
 
-# Copy output bundles and core manifests from Builder stage
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package*.json ./
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:7860', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
 
-# Install production dependencies only to minimize image size
-RUN npm prune --production || npm install --omit=dev
-
-# Start Express server hosting compiled React client side page
-CMD ["npm", "run", "start"]
+CMD ["node", "dist/server.cjs"]

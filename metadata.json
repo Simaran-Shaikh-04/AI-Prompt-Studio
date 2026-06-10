@@ -1,6 +1,6 @@
 {
-  "name": "Claude Prompt Architect",
-  "description": "Optimize natural human language into highly structured, token-saving prompt templates designed for Claude AI, featuring interactive reflective question generation for precise app specification.",
+  "name": "AI Prompt Studio",
+  "description": "Multi-model AI prompt engineering for free tools. Generate optimized prompts for Gemini, NotebookLM, Google AI Studio, Claude, Perplexity, Mistral, DeepSeek, and Grok. Includes Context Bridge for seamless cross-AI continuation when you hit usage limits.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
