@@ -15,7 +15,7 @@ export interface OptimizationProfile {
 }
 
 export interface PromptAnalysis {
-  efficiencyScore: number; // 0-100
+  efficiencyScore: number;
   tokenEstimation: {
     systemPromptTokens: number;
     estimatedSavings: number;
@@ -31,8 +31,8 @@ export interface Attachment {
   name: string;
   type: string;
   size: number;
-  content?: string; // Text content if text, base64 if image
-  previewUrl?: string; // Client object URL for local display
+  content?: string;
+  previewUrl?: string;
 }
 
 export interface GenerationState {
@@ -56,4 +56,38 @@ export interface HistoryItem {
   profileId: string;
   answers: Record<string, string>;
   attachments?: Attachment[];
+}
+
+// ─── AI Prompt Forge + Context Bridge types ──────────────────────────────────
+
+export interface AIModel {
+  id: string;
+  name: string;
+  shortName: string;
+  provider: string;
+  url: string;
+  // Tailwind color classes
+  textClass: string;
+  bgClass: string;
+  borderClass: string;
+  activeBgClass: string;
+  badgeText: string;
+  freeInfo: string;
+  strengths: string[];
+  bestFor: string[];
+  promptingStyle: string;
+  promptingTips: string[];
+  systemPromptSupport: boolean;
+  contextWindow: string;
+  iconEmoji: string;
+  accentHex: string; // For glow/border effects inline
+}
+
+export interface ForgeHistoryItem {
+  id: string;
+  timestamp: string;
+  modelId: string;
+  modelName: string;
+  userRequest: string;
+  forgedPrompt: string;
 }
