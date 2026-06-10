@@ -1407,11 +1407,7 @@ export default function App() {
 
         {activeTab === "image-studio" && <ImagePromptStudio />}
         {activeTab === "notebooklm" && <NotebookLMSuite />}
-        {activeTab === "settings-guide" && <ExpertSettingsGuide />}
-        {activeTab === "memory-guard" && <ClaudeMemoryGuard />}
-        {activeTab === "visual-diff" && <BeforeAfterDiff />}
-        {activeTab === "user-manual" && <UserManualAndAlternatives />}
-      </main>
+              </main>
 
       {/* FOOTER */}
       <footer className="border-t border-slate-950 bg-slate-950 py-8 px-6 mt-16 text-center text-xs text-slate-500 relative z-10">
