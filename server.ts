@@ -267,7 +267,12 @@ app.post("/api/forge-prompt", checkApiKey, async (req, res) => {
     });
 
     return res.json(JSON.parse(response.text?.trim() || "{}"));
-  } app.post("/api/bridge-context", checkApiKey, async (req, res) => {
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message || "Failed to forge prompt." });
+  }
+});
+
+app.post("/api/bridge-context", checkApiKey, async (req, res) => {
   try {
     const {
       sourceModelId,
