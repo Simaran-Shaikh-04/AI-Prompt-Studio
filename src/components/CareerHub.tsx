@@ -39,65 +39,220 @@ export default function CareerHub() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const getRoadmapLevels = (r: CareerResource) => {
-    // If it is SQL/Data Analysis
-    if (
-      r.id.includes("sql") ||
-      r.id === "maven-analytics" ||
-      r.id === "leetcode-sql" ||
-      r.id === "mode-sql" ||
-      r.id === "sqlbolt" ||
-      r.id === "sqlzoo" ||
-      r.id === "kaggle-sql" ||
-      r.id === "w3-sql"
-    ) {
-      return [
-        { level: "Level 0: Absolute Beginner (Orientation)", goal: "Setup and Relational Database Basics", detail: "Understand databases vs spreadsheets. Set up local SQL environment (SQLite/PostgreSQL) or work on browser sandboxes. Master SELECT, FROM, and LIMIT commands." },
-        { level: "Level 1: Novice (Fundamentals)", goal: "Basic Data Filtering & Aggregations", detail: "Master SQL filter operators (WHERE, AND, OR, IN, LIKE, BETWEEN). Learn grouping and aggregating data: COUNT, SUM, AVG, MIN, MAX, GROUP BY, and HAVING." },
-        { level: "Level 2: Intermediate (Application)", goal: "Table Joins & Nested Queries", detail: "Master database relationships. Write INNER JOIN, LEFT JOIN, RIGHT JOIN, and FULL OUTER JOIN. Practice subqueries to query tables within queries." },
-        { level: "Level 3: Competent (Advanced Techniques)", goal: "CTEs, Case Logic & Window Functions", detail: "Write Common Table Expressions (CTEs) for clean script structure. Master analytics Window Functions (ROW_NUMBER, RANK, LEAD, LAG) and conditional CASE WHEN logic." },
-        { level: "Level 4: Proficient (Systems & Architecture)", goal: "Schema Design & Performance Tuning", detail: "Understand database normalization rules. Learn to construct tables, primary/foreign keys, write database views, and implement INDEXES to optimize query performance." },
-        { level: "Level 5: Complete Mastery (Enterprise)", goal: "Scale, Security & BI Dashboards integration", detail: "Practice writing stored procedures and database triggers. Set up backup protocols, secure user access controls, and build pipelines to feed SQL data into BI tools (Power BI/Tableau)." }
-      ];
+  const downloadCategoryRoadmap = (cat: CareerCategory) => {
+    let roadmapHtml = "";
+
+    if (cat.id === "data-analysis") {
+      roadmapHtml = `
+        <h1>Career Roadmap: Data Analysis & SQL Mastery</h1>
+        <p>This roadmap guides you from absolute zero knowledge to an expert, job-ready Data Analyst / Business Intelligence position.</p>
+        
+        <h2>📈 Starting from 0 to 5 Complete Mastery</h2>
+        <div class="level-card">
+          <div class="level-title">Level 0: Absolute Beginner (Orientation)</div>
+          <div class="level-goal">Goal: Setup and Relational Database Basics</div>
+          <div class="level-detail">Understand databases vs spreadsheets. Set up a local database tool like SQLite, DBeaver, or pgAdmin. Master basic commands: <strong>SELECT, FROM, and LIMIT</strong>.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 1: Novice (Fundamentals)</div>
+          <div class="level-goal">Goal: Basic Data Filtering & Aggregations</div>
+          <div class="level-detail">Learn to filter rows using <strong>WHERE</strong>, combining conditions with <strong>AND, OR, NOT, IN, LIKE, and BETWEEN</strong>. Master basic aggregations: <strong>COUNT, SUM, AVG, MIN, MAX</strong>, and how to group results using <strong>GROUP BY</strong> and <strong>HAVING</strong>.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 2: Intermediate (Application)</div>
+          <div class="level-goal">Goal: Table Joins & Nested Queries</div>
+          <div class="level-detail">Understand database relationships. Master <strong>INNER JOIN, LEFT JOIN, RIGHT JOIN, and FULL OUTER JOIN</strong>. Practice writing nested queries (subqueries) to answer multi-step business questions.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 3: Competent (Advanced Techniques)</div>
+          <div class="level-goal">Goal: CTEs, Case Logic & Window Functions</div>
+          <div class="level-detail">Write <strong>Common Table Expressions (CTEs)</strong> using <code>WITH</code> to structure complex queries cleanly. Master <strong>Window Functions</strong> (<code>ROW_NUMBER, RANK, DENSE_RANK, LEAD, LAG</code>) for running totals and analytics. Learn conditional <strong>CASE WHEN</strong> logic.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 4: Proficient (Systems & Architecture)</div>
+          <div class="level-goal">Goal: Schema Design & Query Performance Optimization</div>
+          <div class="level-detail">Learn database normalization rules. Practice creating tables, declaring primary/foreign keys, and writing database <strong>VIEWS</strong>. Understand how <strong>INDEXES</strong> speed up queries and how to read query execution plans.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 5: Complete Mastery (Hirable Status)</div>
+          <div class="level-goal">Goal: Scale, Security & BI Dashboards Integration</div>
+          <div class="level-detail">Write database triggers and stored procedures. Set up database access security. Build data pipelines that automatically push SQL query results to update business dashboards in <strong>Power BI or Tableau</strong>.</div>
+        </div>
+
+        <h2>📝 Resume Presentation & Portfolio Guide</h2>
+        <h3>1. How to Present Yourself in Your Resume</h3>
+        <ul>
+          <li><strong>Skills Section:</strong> Group your skills clearly: <em>Database: SQL (PostgreSQL/MySQL), Analytics: Excel (Power Query), Visualization: Power BI/Tableau, Language: Python (Pandas/NumPy)</em>.</li>
+          <li><strong>Focus on Business Impact:</strong> Instead of just listing "SQL" as a skill, show how you used it to find insights or save money. Use strong action verbs like <em>Queried, Optimized, Visualized, Modeled, Cleaned, Analyzed, Automated</em>.</li>
+          <li><strong>Sample Bullet Point:</strong> "Designed optimized SQL queries using indexes and CTEs, reducing dashboard load times by 35% and saving 10 hours of manual weekly reporting."</li>
+        </ul>
+
+        <h3>2. Portfolio Projects to Build (To Be Hirable)</h3>
+        <ul>
+          <li><strong>Sales Performance Dashboard:</strong> Query a retail dataset in SQL, calculate month-over-month growth, and build a Power BI dashboard showing key metrics.</li>
+          <li><strong>Database Optimization Project:</strong> Take a slow-running query, explain why it was slow (using execution plans), add indexes, and document the speedup. Save this in a GitHub repository with clean `.sql` files.</li>
+        </ul>
+      `;
+    } else if (cat.id === "emerging-careers") {
+      roadmapHtml = `
+        <h1>Career Roadmap: Emerging Roles & Tech Fields</h1>
+        <p>This roadmap guides you from absolute zero to an expert, job-ready Prompt Engineer / No-Code Developer / AI Integrations Specialist.</p>
+        
+        <h2>📈 Starting from 0 to 5 Complete Mastery</h2>
+        <div class="level-card">
+          <div class="level-title">Level 0: Absolute Beginner (Orientation)</div>
+          <div class="level-goal">Goal: Understanding the AI & Visual Development Ecosystem</div>
+          <div class="level-detail">Learn key vocabulary, no-code drag-and-drop builder components, and basic prompt models. Create builder accounts and review the documentation.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 1: Novice (Fundamentals)</div>
+          <div class="level-goal">Goal: Core Workflows & Basic Builds</div>
+          <div class="level-detail">Construct simple, functional prototypes. Learn logic rules, layout adjustments, and basic zero-shot, few-shot prompting techniques.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 2: Intermediate (Application)</div>
+          <div class="level-goal">Goal: API Connectors & Third-Party Integrations</div>
+          <div class="level-detail">Connect your builder tools to databases (Airtable) or AI models via APIs. Build a portfolio of 3-5 functional web tools.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 3: Competent (Advanced Techniques)</div>
+          <div class="level-goal">Goal: Custom Logic & Prompt Chain Optimizations</div>
+          <div class="level-detail">Refine logic workflows, handle database exceptions, structure robust state management, and write optimized prompt chains. Focus on performance tuning.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 4: Proficient (Systems & Architecture)</div>
+          <div class="level-goal">Goal: Scaling Apps for Production</div>
+          <div class="level-detail">Deploy live applications or automated AI agent clusters. Structure backends for production workloads and optimize page loading times.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 5: Complete Mastery (Hirable Status)</div>
+          <div class="level-goal">Goal: Security Auditing & Global Deployments</div>
+          <div class="level-detail">Audit application security, prevent AI jailbreaking (prompt injection), ensure access control compliance, and deploy enterprise products to global users.</div>
+        </div>
+
+        <h2>📝 Resume Presentation & Portfolio Guide</h2>
+        <h3>1. How to Present Yourself in Your Resume</h3>
+        <ul>
+          <li><strong>Skills Section:</strong> List your core frameworks: <em>AI Ops: LLM Orchestration, Prompt Engineering, API Connectors. No-Code: Bubble, Webflow, Airtable, Make.com. Blockchain: Solidity, Web3.js</em>.</li>
+          <li><strong>Focus on Speed & Innovation:</strong> Highlight your ability to ship functional applications quickly without heavy engineering debt. Use action verbs like <em>Integrated, Automated, Architected, Designed, Shipped, Configured</em>.</li>
+          <li><strong>Sample Bullet Point:</strong> "Built a fully functional AI-powered support chatbot that solved 45% of customer queries automatically."</li>
+        </ul>
+
+        <h3>2. Portfolio Projects to Build (To Be Hirable)</h3>
+        <ul>
+          <li><strong>Live SaaS App (No-code):</strong> Build a fully working subscription marketplace on Bubble.io with Airtable database backend and stripe payment integration.</li>
+          <li><strong>AI Multi-Agent Workspace:</strong> Build a custom workflow on Make.com connecting OpenAI API to Google Docs and Slack to automate article research.</li>
+        </ul>
+      `;
+    } else if (cat.id === "bcom-resistant") {
+      roadmapHtml = `
+        <h1>Career Roadmap: B.Com Pathways (AI-Resistant)</h1>
+        <p>This roadmap guides you from zero to expert human compliance auditor, tax litigator, and risk consultant.</p>
+        
+        <h2>📈 Starting from 0 to 5 Complete Mastery</h2>
+        <div class="level-card">
+          <div class="level-title">Level 0: Absolute Beginner (Orientation)</div>
+          <div class="level-goal">Goal: Financial Literacy & Corporate Structures</div>
+          <div class="level-detail">Learn double-entry bookkeeping rules, legal entity definitions, basic tax codes, and financial reporting terminology.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 1: Novice (Fundamentals)</div>
+          <div class="level-goal">Goal: Transactions, Auditing & Professional Foundations</div>
+          <div class="level-detail">Clear professional intermediate exams (CA/CS/CMA). Learn to prepare journal entries, construct balance sheets, and verify general ledgers.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 2: Intermediate (Application)</div>
+          <div class="level-goal">Goal: Compliance Audits & Articleship Training</div>
+          <div class="level-detail">Perform regulatory compliance filings, conduct physical inventory checks, study corporate law details, and complete articleship training.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 3: Competent (Advanced Techniques)</div>
+          <div class="level-goal">Goal: Strategic Costing & Final Professional Licensing</div>
+          <div class="level-detail">Study advanced corporate taxation laws, portfolio theories, corporate valuation metrics, and clear final professional licensing exams.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 4: Proficient (Systems & Analytics)</div>
+          <div class="level-goal">Goal: Forensic Investigations & System Audits</div>
+          <div class="level-detail">Master forensic accounting techniques to identify fraud and trace shell transactions. Configure and audit green/ESG compliance dashboards.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 5: Complete Mastery (Hirable Status)</div>
+          <div class="level-goal">Goal: CFO Advisory & Board Governance</div>
+          <div class="level-detail">Lead corporate restructuring (M&A), design global risk hedging strategies, arbitrate shareholder legal disputes, and direct financial strategy.</div>
+        </div>
+
+        <h2>📝 Resume Presentation & Portfolio Guide</h2>
+        <h3>1. How to Present Yourself in Your Resume</h3>
+        <ul>
+          <li><strong>Skills Section:</strong> Highlight professional compliance frameworks: <em>Auditing Standards, Direct/Indirect Taxation, Corporate Law, Compliance Auditing, Forensic Accounting</em>.</li>
+          <li><strong>Focus on Professional Trust:</strong> Highlight your regulatory certifications and details of statutory audits. Use action verbs like <em>Audited, Filed, Evaluated, Structured, Arbitrated, Advised</em>.</li>
+          <li><strong>Sample Bullet Point:</strong> "Conducted statutory compliance audits for 8 corporate clients, identifying 12+ accounting discrepancies and ensuring zero filing penalties."</li>
+        </ul>
+
+        <h3>2. Portfolio Projects to Build (To Be Hirable)</h3>
+        <ul>
+          <li><strong>Corporate Compliance Audit Case Study:</strong> Write a detailed audit case study analyzing a mock corporation's balance sheets and highlighting governance discrepancies.</li>
+          <li><strong>ESG Risk Framework:</strong> Build a custom sustainability audit report assessing corporate compliance with ESG standards.</li>
+        </ul>
+      `;
+    } else if (cat.id === "bcom-augmented") {
+      roadmapHtml = `
+        <h1>Career Roadmap: B.Com Pathways (AI-Augmented)</h1>
+        <p>This roadmap guides you from zero to expert financial analyst, M&A strategist, and algorithmic quant specialist.</p>
+        
+        <h2>📈 Starting from 0 to 5 Complete Mastery</h2>
+        <div class="level-card">
+          <div class="level-title">Level 0: Absolute Beginner (Orientation)</div>
+          <div class="level-goal">Goal: US GAAP & Accounting Ledger Automation</div>
+          <div class="level-detail">Learn US GAAP, international auditing standards, basic investment valuation models, and automated ledger terminology.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 1: Novice (Fundamentals)</div>
+          <div class="level-goal">Goal: Automated Costing & Professional Exams Prep</div>
+          <div class="level-detail">Learn automated transaction mapping. Clear initial global licensing exam stages (CPA/CMA/CFA).</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 2: Intermediate (Application)</div>
+          <div class="level-goal">Goal: Financial Modeling & Cost Budgeting</div>
+          <div class="level-detail">Build financial models in Excel. Master corporate costing, planning databases, and pass core global licensing sections.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 3: Competent (Advanced Techniques)</div>
+          <div class="level-goal">Goal: Asset Valuation & Professional Licensing Completion</div>
+          <div class="level-detail">Master portfolio asset valuation, derivatives analysis, and complete your final global certifications.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 4: Proficient (Systems & Analytics)</div>
+          <div class="level-goal">Goal: Quantitative Financial Systems Integration</div>
+          <div class="level-detail">Incorporate analytics engines (Power BI, Power Query) to automate costing reports. Write Python scripts to clean financial data.</div>
+        </div>
+        <div class="level-card">
+          <div class="level-title">Level 5: Complete Mastery (Hirable Status)</div>
+          <div class="level-goal">Goal: Corporate M&A Strategy & Risk Hedging</div>
+          <div class="level-detail">Design quantitative investment models and automated risk hedging algorithms. Direct corporate M&A transactions.</div>
+        </div>
+
+        <h2>📝 Resume Presentation & Portfolio Guide</h2>
+        <h3>1. How to Present Yourself in Your Resume</h3>
+        <ul>
+          <li><strong>Skills Section:</strong> Highlight financial modeling and tech stacks: <em>Financial Modeling, US GAAP, Excel Power Query, Quantitative Valuation, Power BI</em>.</li>
+          <li><strong>Focus on Analytical Scale:</strong> Highlight how you used automation to optimize reports. Use action verbs like <em>Automated, Modeled, Valued, Forecasted, Standardized, Programmed</em>.</li>
+          <li><strong>Sample Bullet Point:</strong> "Built a dynamic DCF financial valuation model for a tech startup, predicting cash flows with 92% accuracy and automating cost budgeting reports."</li>
+        </ul>
+
+        <h3>2. Portfolio Projects to Build (To Be Hirable)</h3>
+        <ul>
+          <li><strong>DCF Financial Valuation Model:</strong> Build a fully dynamic Discounted Cash Flow valuation model in Excel/Google Sheets for a public company and document the calculations.</li>
+          <li><strong>Cost Forecasting Dashboard:</strong> Build a Power BI financial planning dashboard tracking expenses and forecasting revenue.</li>
+        </ul>
+      `;
     }
-
-    // AI or Emerging Roles
-    if (
-      r.id === "learn-prompting" ||
-      r.id === "deeplearning-ai" ||
-      r.id === "bubble-academy" ||
-      r.id === "webflow-univ" ||
-      r.id === "cryptozombies"
-    ) {
-      return [
-        { level: "Level 0: Absolute Beginner (Orientation)", goal: "Understanding the Ecosystem & Mechanics", detail: "Learn key vocabulary, prompt structures, or no-code drag-and-drop builder components. Create builder accounts and review the documentation." },
-        { level: "Level 1: Novice (Fundamentals)", goal: "Core Workflows & Basic Builds", detail: "Construct simple, functional prototypes or execute basic tasks. Learn logic rules, layout adjustments, and initial parameter configurations." },
-        { level: "Level 2: Intermediate (Application)", goal: "API Connectors & Third-Party Integrations", detail: "Connect your builder tools to database APIs, vector storage, or external plugins. Build a portfolio of 3-5 functional web tools." },
-        { level: "Level 3: Competent (Advanced Techniques)", goal: "Custom Logic & Prompt Chain Optimizations", detail: "Refine logic workflows, handle exceptions, structure robust state management, and write optimized prompt chains. Focus on performance tuning." },
-        { level: "Level 4: Proficient (Systems & Architecture)", goal: "Production-ready scaling", detail: "Deploy live applications or automated AI agent clusters. Structure backends for production workloads and optimize page loading times." },
-        { level: "Level 5: Complete Mastery (Enterprise)", goal: "Security Auditing & Global Deployments", detail: "Audit application/smart contract security vulnerabilities, ensure complete access control compliance, and deploy enterprise products to global users." }
-      ];
-    }
-
-    // Default Commerce/B.Com Pathways (CA, CS, CPA, CMA, CFA, ESG, etc.)
-    return [
-      { level: "Level 0: Absolute Beginner (Orientation)", goal: "Financial Literacy & Corporate Structures", detail: "Learn double-entry bookkeeping rules, legal entity definitions, basic tax codes, and financial reporting terminology." },
-      { level: "Level 1: Novice (Fundamentals)", goal: "Transactions, Basic Auditing & Professional Foundations", detail: "Learn to prepare journal entries, construct balance sheets, verify general ledgers, and clear intermediate professional exams." },
-      { level: "Level 2: Intermediate (Application)", goal: "Corporate Compliance, Statutory Audits & Internships", detail: "Perform regulatory compliance filings, conduct physical inventory checks, study corporate law details, and complete articleship training." },
-      { level: "Level 3: Competent (Advanced Techniques)", goal: "Strategic Costing, Valuation & Professional Licensing", detail: "Study advanced corporate taxation laws, portfolio theories, corporate valuation metrics, and clear final licensing exams." },
-      { level: "Level 4: Proficient (Systems & Analytics)", goal: "Forensic Investigations, BI Dashboards & System Audits", detail: "Deploy BI tools (Excel, Power BI) to automate reporting. Learn forensic accounting techniques to identify fraud and trace shell transactions." },
-      { level: "Level 5: Complete Mastery (Leadership)", goal: "CFO Advisory, Risk Management & Corporate Strategy", detail: "Lead corporate restructuring (M&A), design global risk hedging strategies, arbitrate shareholder legal disputes, and direct financial strategy." }
-    ];
-  };
-
-  const downloadRoadmap = (r: CareerResource, categoryTitle: string) => {
-    const levels = getRoadmapLevels(r);
 
     const docHtml = `
 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
 <head>
 <meta charset="utf-8">
-<title>Career Roadmap: ${r.name}</title>
+<title>Career Roadmap: ${cat.title}</title>
 <style>
   body {
     font-family: 'Segoe UI', Arial, sans-serif;
@@ -120,6 +275,12 @@ export default function CareerHub() {
     margin-top: 25px;
     border-bottom: 1px solid #E2E8F0;
     padding-bottom: 4px;
+  }
+  h3 {
+    color: #4F46E5;
+    font-size: 13px;
+    margin-top: 15px;
+    margin-bottom: 6px;
   }
   p {
     font-size: 12px;
@@ -179,56 +340,27 @@ export default function CareerHub() {
     border-top: 1px solid #E2E8F0;
     padding-top: 10px;
   }
+  ul {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  li {
+    margin-bottom: 6px;
+  }
 </style>
 </head>
 <body>
 
-  <h1>Career Mastery Roadmap: ${r.name}</h1>
-  
-  <div class="meta-box">
-    <div class="meta-title">Field / Category</div>
-    <div class="meta-value">${categoryTitle}</div>
-    
-    <div class="meta-title">AI Impact Classification</div>
-    <div class="meta-value">${
-      r.aiClassification === "resistant"
-        ? "🛡️ AI-Resistant (Requires human compliance, regulatory law & qualitative audit)"
-        : r.aiClassification === "augmented"
-        ? "🤖 AI-Augmented (Leverages quantitative algorithms, models & BI dashboards)"
-        : "Standard"
-    }</div>
-    
-    <div class="meta-title">Industry Reputation</div>
-    <div class="meta-value">${r.reputation}</div>
-    
-    <div class="meta-title">Recommended Platform</div>
-    <div class="meta-value">${r.name} (${r.url})</div>
-  </div>
+  ${roadmapHtml}
 
-  <h2>🎯 Target Skills to Master</h2>
-  <p>${r.skills.join(" · ")}</p>
-
-  <h2>📈 Roadmap from 0 to 5 Complete Mastery</h2>
-  
-  ${levels
-    .map(
-      lvl => `
-    <div class="level-card">
-      <div class="level-title">${lvl.level}</div>
-      <div class="level-goal">Goal: ${lvl.goal}</div>
-      <div class="level-detail">${lvl.detail}</div>
-    </div>
-  `
-    )
-    .join("")}
-
-  <h2>📋 Core Career Qualifications & Milestones</h2>
+  <h2>📚 Curated Study Resources & Websites</h2>
   <ul>
-    ${
-      r.qualifications && r.qualifications.length > 0
-        ? r.qualifications.map(q => `<li>${q}</li>`).join("")
-        : `<li>Self-study portfolio & practical tools built using ${r.name}</li>`
-    }
+    ${cat.resources.map(r => `
+      <li>
+        <strong>${r.name}</strong> (${r.url}) - ${r.bestFor} (${r.cost.toUpperCase()})
+        <br/><span style="color:#64748B; font-size:10px; font-style:italic;">Reputation: ${r.reputation}</span>
+      </li>
+    `).join("")}
   </ul>
 
   <div class="footer">
@@ -242,7 +374,7 @@ export default function CareerHub() {
     const blob = new Blob([docHtml], { type: "application/msword;charset=utf-8;" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `roadmap-${r.id}.doc`;
+    a.download = `${cat.id}-roadmap.doc`;
     a.click();
   };
 
@@ -313,16 +445,26 @@ export default function CareerHub() {
         ) : (
           filteredCategories.map(cat => (
             <div key={cat.id} className="space-y-4">
-              {/* Category Header */}
-              <div className="border-b border-[#1A2138] pb-2">
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  {cat.id === "data-analysis" && <Database className="w-4 h-4 text-cyan-400" />}
-                  {cat.id === "emerging-careers" && <Cpu className="w-4 h-4 text-rose-400" />}
-                  {cat.id === "bcom-resistant" && <Shield className="w-4 h-4 text-emerald-400" />}
-                  {cat.id === "bcom-augmented" && <Sparkles className="w-4 h-4 text-amber-400" />}
-                  {cat.title}
-                </h3>
-                <p className="text-[11px] text-slate-400 mt-1">{cat.description}</p>
+              {/* Category Header with Roadmap Exporter */}
+              <div className="border-b border-[#1A2138] pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    {cat.id === "data-analysis" && <Database className="w-4 h-4 text-cyan-400" />}
+                    {cat.id === "emerging-careers" && <Cpu className="w-4 h-4 text-rose-400" />}
+                    {cat.id === "bcom-resistant" && <Shield className="w-4 h-4 text-emerald-400" />}
+                    {cat.id === "bcom-augmented" && <Sparkles className="w-4 h-4 text-amber-400" />}
+                    {cat.title}
+                  </h3>
+                  <p className="text-[11px] text-slate-400 leading-normal">{cat.description}</p>
+                </div>
+                <button
+                  onClick={() => downloadCategoryRoadmap(cat)}
+                  className="flex items-center justify-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] rounded-lg transition shrink-0 cursor-pointer self-start sm:self-auto shadow-md"
+                  title={`Download complete ${cat.title} Career Roadmap & Resume Guide (.doc)`}
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Roadmap & Resume Guide</span>
+                </button>
               </div>
 
               {/* Resources Grid */}
@@ -415,33 +557,23 @@ export default function CareerHub() {
 
                     {/* Footer */}
                     <div className="flex items-center justify-between border-t border-[#1A2138] mt-4 pt-3 text-[10px] text-slate-500">
+                      <span className="italic truncate max-w-[70%] text-slate-600">{r.reputation}</span>
                       <button
-                        onClick={() => downloadRoadmap(r, cat.title)}
-                        className="text-[10px] font-semibold inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300 cursor-pointer transition"
-                        title="Download detailed Markdown career roadmap"
+                        onClick={() => handleCopyLink(r)}
+                        className={`text-[10px] font-semibold inline-flex items-center gap-1 cursor-pointer transition ${
+                          copiedId === r.id ? "text-emerald-400" : "text-slate-400 hover:text-white"
+                        }`}
                       >
-                        <Download className="w-3.5 h-3.5" />
-                        <span>Roadmap</span>
+                        {copiedId === r.id ? (
+                          <>
+                            <Check className="w-3 h-3" /> Copied
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3" /> Copy Link
+                          </>
+                        )}
                       </button>
-                      <div className="flex items-center gap-2">
-                        <span className="hidden sm:inline italic text-slate-600 truncate max-w-[120px]">{r.reputation}</span>
-                        <button
-                          onClick={() => handleCopyLink(r)}
-                          className={`text-[10px] font-semibold inline-flex items-center gap-1 cursor-pointer transition ${
-                            copiedId === r.id ? "text-emerald-400" : "text-slate-400 hover:text-white"
-                          }`}
-                        >
-                          {copiedId === r.id ? (
-                            <>
-                              <Check className="w-3 h-3" /> Copied
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3 h-3" /> Copy Link
-                            </>
-                          )}
-                        </button>
-                      </div>
                     </div>
                   </div>
                 ))}
