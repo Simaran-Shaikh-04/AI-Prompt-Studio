@@ -179,6 +179,20 @@ export default function CareerHub() {
                         {r.bestFor}
                       </p>
 
+                      {/* Qualifications */}
+                      {r.qualifications && r.qualifications.length > 0 && (
+                        <div className="bg-[#080C16] border border-[#1A2138]/50 p-2.5 rounded-lg space-y-1">
+                          <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-wide block">Required Qualifications:</span>
+                          <ul className="list-disc pl-3.5 space-y-0.5">
+                            {r.qualifications.map((qual, idx) => (
+                              <li key={idx} className="text-[10px] text-slate-400 leading-normal">
+                                {qual}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
                       {/* Skills taught */}
                       <div className="flex flex-wrap gap-1">
                         {r.skills.map((skill, idx) => (
