@@ -173,6 +173,42 @@ export default function StudentSuite() {
     el.click();
   };
 
+  const exportFlashcardsCSV = () => {
+    const text = state.generatedPrompt;
+    if (!text) return;
+    const lines = text.split("\n");
+    const cards: [string, string][] = [];
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+      if (trimmed.includes("|")) {
+        const parts = trimmed.split("|");
+        if (parts.length >= 2) {
+          cards.push([parts[0].trim(), parts[1].trim()]);
+          return;
+        }
+      }
+      if (trimmed.includes(":") && !trimmed.includes("://") && !trimmed.startsWith("http") && !trimmed.startsWith("#")) {
+        const parts = trimmed.split(":");
+        if (parts.length === 2 && parts[0].length > 3 && parts[1].length > 3) {
+          cards.push([parts[0].trim(), parts[1].trim()]);
+        }
+      }
+    });
+    if (cards.length === 0) {
+      alert("No flashcards detected in the output prompt. Format should be 'Front | Back'.");
+      return;
+    }
+    const csvContent = cards
+      .map(row => row.map(val => `"${val.replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `anki-flashcards-${Date.now()}.csv`;
+    a.click();
+  };
+
   const resetWorkspace = () => {
     setState({ appIdea: "", isLoadingQuestions: false, questions: [], currentQuestionIndex: 0, answers: {}, selectedProfileId: "token-saving", generatedPrompt: "", isGeneratingPrompt: false, analysis: null, attachments: [] });
     setActiveStep("ideation"); setErrorMessage(null);
@@ -519,6 +555,14 @@ export default function StudentSuite() {
                 <div className="flex items-center justify-between p-4 border-b border-[#1A2138]">
                   <h3 className="font-bold text-white text-sm">Generated Prompt</h3>
                   <div className="flex items-center gap-2">
+                    {state.generatedPrompt && (state.generatedPrompt.includes("|") || state.generatedPrompt.includes(":")) && (
+                      <button onClick={exportFlashcardsCSV}
+                        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-indigo-950/45 hover:bg-indigo-900/45 text-indigo-400 border border-indigo-900/50 transition cursor-pointer"
+                        title="Export Flashcards to Anki CSV">
+                        <BookOpen className="w-3.5 h-3.5" />
+                        <span>Export Anki CSV</span>
+                      </button>
+                    )}
                     <button onClick={copyToClipboard}
                       className={`flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-lg border transition cursor-pointer ${copied ? "bg-emerald-950/30 border-emerald-700/40 text-emerald-400" : "bg-emerald-700 hover:bg-emerald-600 border-emerald-700 text-white"}`}>
                       {copied ? <><Check className="w-3.5 h-3.5" />Copied!</> : <><Copy className="w-3.5 h-3.5" />Copy</>}

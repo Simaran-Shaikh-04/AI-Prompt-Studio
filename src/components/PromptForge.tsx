@@ -2,7 +2,8 @@ import { useState, useRef } from "react";
 import {
   Sparkles, Copy, Check, RotateCcw, ExternalLink,
   UploadCloud, FileCheck, X,
-  ArrowRight, Lightbulb, RefreshCw, Download
+  ArrowRight, Lightbulb, RefreshCw, Download,
+  ChevronLeft, ChevronRight, BookOpen
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { AI_MODELS } from "../data";
@@ -129,6 +130,81 @@ export default function PromptForge() {
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `${prefix}-${selectedModel.id}-prompt.md`;
+    a.click();
+  };
+
+  const exportToJupyter = () => {
+    if (!result) return;
+    const filename = `prompt-forge-${selectedModel.id}.ipynb`;
+    const notebook = {
+      cells: [
+        {
+          cell_type: "markdown",
+          metadata: {},
+          source: [
+            `# AI Prompt Studio — Forged Prompt Notebook\n`,
+            `* **Target Model:** ${selectedModel.name} (${selectedModel.provider})\n`,
+            `* **Created As Of:** ${new Date().toLocaleString()}\n`,
+            `* **Original Request:** ${userRequest}\n`
+          ]
+        },
+        {
+          cell_type: "markdown",
+          metadata: {},
+          source: [
+            `## 🎯 Original Optimized Prompt\n`,
+            `Paste this prompt into ${selectedModel.shortName} to begin your session:\n\n`,
+            ...result.forgedPrompt.split("\n").map(line => line + "\n")
+          ]
+        }
+      ],
+      metadata: {
+        kernelspec: {
+          display_name: "Python 3",
+          language: "python",
+          name: "python3"
+        },
+        language_info: {
+          name: "python"
+        }
+      },
+      nbformat: 4,
+      nbformat_minor: 2
+    };
+
+    const hasAnswers = Object.values(questionAnswers).some(val => val.trim());
+    if (hasAnswers) {
+      const answerLines: string[] = [`## 🔧 Refinement Q&A\n\n`];
+      result.reflectiveQuestions.forEach(q => {
+        const ans = questionAnswers[q.id];
+        if (ans?.trim()) {
+          answerLines.push(`* **Q:** ${q.question}\n`);
+          answerLines.push(`  **A:** ${ans}\n\n`);
+        }
+      });
+      notebook.cells.splice(2, 0, {
+        cell_type: "markdown",
+        metadata: {},
+        source: answerLines
+      });
+    }
+
+    if (refinedPrompt) {
+      notebook.cells.push({
+        cell_type: "markdown",
+        metadata: {},
+        source: [
+          `## ✦ Refined Prompt\n`,
+          `This is the refined version of the prompt containing your answers:\n\n`,
+          ...refinedPrompt.split("\n").map(line => line + "\n")
+        ]
+      });
+    }
+
+    const blob = new Blob([JSON.stringify(notebook, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
     a.click();
   };
 
@@ -344,8 +420,15 @@ export default function PromptForge() {
                   {copiedMain ? <><Check className="w-3.5 h-3.5" />Copied!</> : <><Copy className="w-3.5 h-3.5" />Copy Prompt</>}
                 </button>
                 <button onClick={() => handleDownload(result.forgedPrompt, "forge")}
-                  className="p-2.5 rounded-lg bg-[#080C16] border border-[#1A2138] text-slate-500 hover:text-white transition cursor-pointer">
+                  className="p-2.5 rounded-lg bg-[#080C16] border border-[#1A2138] text-slate-500 hover:text-white transition cursor-pointer"
+                  title="Download Markdown">
                   <Download className="w-4 h-4" />
+                </button>
+                <button onClick={exportToJupyter}
+                  className="p-2.5 rounded-lg bg-[#080C16] border border-[#1A2138] text-slate-500 hover:text-white transition cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+                  title="Export to Jupyter Notebook (.ipynb)">
+                  <BookOpen className="w-4 h-4 text-indigo-400" />
+                  <span className="hidden sm:inline">Export Notebook</span>
                 </button>
               </div>
             </div>
@@ -353,7 +436,7 @@ export default function PromptForge() {
         </div>
       </div>
 
-      {/* ── Step 4: Reflective questions (optional) ───────────────────────────── */}
+      {/* ── Step 4: Reflective questions (optional wizard) ───────────────────── */}
       <AnimatePresence>
         {result && result.reflectiveQuestions?.length > 0 && showQuestions && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
@@ -361,10 +444,10 @@ export default function PromptForge() {
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500 block">
-                  04 · Refine with Reflective Questions
-                  <span className="ml-2 text-[9px] text-slate-600 normal-case tracking-normal font-normal">(optional — skip anytime)</span>
+                  04 · Refine with Reflective Questions Wizard
+                  <span className="ml-2 text-[9px] text-slate-600 normal-case tracking-normal font-normal">(optional)</span>
                 </span>
-                <p className="text-xs text-slate-500 mt-0.5">Answer any questions below to get a more precise prompt. Unanswered questions are ignored.</p>
+                <p className="text-xs text-slate-500 mt-0.5">Answer the questions step-by-step to compile a more precise prompt.</p>
               </div>
               <button onClick={() => setShowQuestions(false)}
                 className="text-slate-600 hover:text-slate-300 transition cursor-pointer">
@@ -372,44 +455,91 @@ export default function PromptForge() {
               </button>
             </div>
 
-            {/* Question cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {result.reflectiveQuestions.map((q, i) => (
-                <div key={q.id}
-                  className={`p-3 rounded-xl border transition-all ${
-                    questionAnswers[q.id]?.trim()
-                      ? `${selectedModel.bgClass} ${selectedModel.borderClass}`
-                      : "bg-[#080C16] border-[#1A2138]"
-                  }`}>
-                  <div className="flex items-start gap-2 mb-2">
-                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${selectedModel.bgClass} ${selectedModel.textClass}`}>Q{i + 1}</span>
-                    <p className="text-xs font-semibold text-slate-200 leading-snug">{q.question}</p>
-                  </div>
-                  <p className="text-[10px] text-slate-500 mb-2 leading-relaxed">{q.helperText}</p>
-                  <textarea
-                    value={questionAnswers[q.id] || ""}
-                    onChange={e => setQuestionAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
-                    placeholder="Your answer (optional)…"
-                    className="w-full h-16 bg-[#080C16] border border-[#1A2138] focus:border-slate-600 rounded-lg p-2 text-[11px] text-slate-200 placeholder-slate-700 focus:outline-none resize-none"
-                  />
-                </div>
+            {/* Wizard Steps Progress */}
+            <div className="flex items-center gap-1.5 pb-1">
+              {result.reflectiveQuestions.map((q, idx) => (
+                <div key={q.id} className={`h-1.5 rounded-full transition-all duration-200 ${
+                  idx === currentQIdx ? `w-8 bg-indigo-500` :
+                  questionAnswers[q.id]?.trim() ? `w-2 bg-emerald-500` : `w-2 bg-[#1A2138]`
+                }`} />
               ))}
+              <span className="text-[10px] text-slate-500 ml-2 font-semibold">
+                Question {currentQIdx + 1} of {result.reflectiveQuestions.length}
+              </span>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-3 pt-1">
-              <button onClick={() => handleForge(true)} disabled={isRefining}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition cursor-pointer disabled:opacity-40 ${selectedModel.textClass}`}
-                style={{ background: `${selectedModel.accentHex}18`, border: `1px solid ${selectedModel.accentHex}35` }}>
-                {isRefining
-                  ? <><div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />Refining…</>
-                  : <><RefreshCw className="w-3.5 h-3.5" />Refine Prompt with Answers</>
-                }
-              </button>
-              <button onClick={() => { setShowQuestions(false); setQuestionAnswers({}); }}
-                className="text-xs text-slate-500 hover:text-slate-300 transition cursor-pointer">
-                Skip all questions
-              </button>
+            {/* Question card (active step) */}
+            {activeQ && (
+              <div className={`p-4 rounded-xl border transition-all ${selectedModel.bgClass} ${selectedModel.borderClass} border bg-[#080C16] relative overflow-hidden`}>
+                <div className="flex items-start gap-2 mb-2">
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${selectedModel.bgClass} ${selectedModel.textClass}`}>Q{currentQIdx + 1}</span>
+                  <p className="text-sm font-semibold text-slate-200 leading-snug">{activeQ.question}</p>
+                </div>
+                <p className="text-xs text-slate-400 mb-3 leading-relaxed">{activeQ.helperText}</p>
+                <textarea
+                  value={questionAnswers[activeQ.id] || ""}
+                  onChange={e => setQuestionAnswers(prev => ({ ...prev, [activeQ.id]: e.target.value }))}
+                  placeholder="Your answer (optional)…"
+                  className="w-full h-20 bg-[#0D1225] border border-[#1A2138] focus:border-slate-600 rounded-lg p-3 text-xs text-slate-200 placeholder-slate-700 focus:outline-none resize-none leading-relaxed"
+                />
+              </div>
+            )}
+
+            {/* Actions / Navigation */}
+            <div className="flex items-center justify-between gap-3 pt-1">
+              <div className="flex items-center gap-2">
+                <button
+                  disabled={currentQIdx === 0}
+                  onClick={() => setCurrentQIdx(prev => prev - 1)}
+                  className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-white bg-[#080C16] border border-[#1A2138] px-3 py-2 rounded-lg transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer">
+                  <ChevronLeft className="w-3.5 h-3.5" /> Back
+                </button>
+                <button
+                  onClick={() => {
+                    if (currentQIdx < result.reflectiveQuestions.length - 1) {
+                      setCurrentQIdx(prev => prev + 1);
+                    } else {
+                      handleForge(true);
+                    }
+                  }}
+                  className={`flex items-center gap-1 text-[11px] font-bold px-3 py-2 rounded-lg transition cursor-pointer ${
+                    currentQIdx < result.reflectiveQuestions.length - 1 ? "bg-slate-800 text-white hover:bg-slate-700" : `${selectedModel.textClass} bg-indigo-950/40 border border-indigo-900/40`
+                  }`}>
+                  {currentQIdx < result.reflectiveQuestions.length - 1 ? (
+                    <>Next <ChevronRight className="w-3.5 h-3.5" /></>
+                  ) : (
+                    <>Finish &amp; Refine</>
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    setQuestionAnswers(prev => ({ ...prev, [activeQ.id]: "" }));
+                    if (currentQIdx < result.reflectiveQuestions.length - 1) {
+                      setCurrentQIdx(prev => prev + 1);
+                    } else {
+                      handleForge(true);
+                    }
+                  }}
+                  className="text-[11px] text-slate-500 hover:text-slate-300 px-2.5 py-2 transition cursor-pointer">
+                  Skip this question
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button onClick={() => handleForge(true)} disabled={isRefining}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs transition cursor-pointer disabled:opacity-40 ${selectedModel.textClass}`}
+                  style={{ background: `${selectedModel.accentHex}18`, border: `1px solid ${selectedModel.accentHex}35` }}>
+                  {isRefining ? (
+                    <><div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />Refining…</>
+                  ) : (
+                    <><RefreshCw className="w-3.5 h-3.5" />Refine Now</>
+                  )}
+                </button>
+                <button onClick={() => { setShowQuestions(false); setQuestionAnswers({}); setCurrentQIdx(0); }}
+                  className="text-xs text-slate-500 hover:text-slate-300 transition cursor-pointer">
+                  Clear All
+                </button>
+              </div>
             </div>
 
             {/* Refined prompt output */}
@@ -425,15 +555,22 @@ export default function PromptForge() {
                   </div>
                   <div className="flex items-center gap-2">
                     <button onClick={() => handleCopy(refinedPrompt, "refined")}
-                      className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold border transition cursor-pointer ${
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-bold border transition cursor-pointer ${
                         copiedRefined ? "bg-emerald-950/30 border-emerald-700/40 text-emerald-400"
                           : `${selectedModel.borderClass} ${selectedModel.textClass} hover:opacity-80`
                       }`}>
                       {copiedRefined ? <><Check className="w-3.5 h-3.5" />Copied!</> : <><Copy className="w-3.5 h-3.5" />Copy Refined</>}
                     </button>
                     <button onClick={() => handleDownload(refinedPrompt, "refined")}
-                      className="p-2 rounded-lg bg-[#080C16] border border-[#1A2138] text-slate-500 hover:text-white transition cursor-pointer">
+                      className="p-2 rounded-lg bg-[#080C16] border border-[#1A2138] text-slate-500 hover:text-white transition cursor-pointer"
+                      title="Download Refined Markdown">
                       <Download className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={exportToJupyter}
+                      className="p-2 rounded-lg bg-[#080C16] border border-[#1A2138] text-slate-500 hover:text-white transition cursor-pointer flex items-center gap-1 text-[10px] font-semibold"
+                      title="Export Refined to Jupyter Notebook (.ipynb)">
+                      <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
+                      <span className="hidden sm:inline">Export Notebook</span>
                     </button>
                   </div>
                 </motion.div>

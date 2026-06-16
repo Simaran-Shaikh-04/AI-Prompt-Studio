@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import {
   Library, ExternalLink, Check, Flag, Search,
-  BookOpen, GraduationCap, Target, Rocket
+  BookOpen, GraduationCap, Target, Rocket,
+  X, Loader2, Calendar
 } from "lucide-react";
 import { RESOURCES, RESOURCE_CATEGORIES } from "../data/hubData";
 import type { Resource, ResourceCategory, ResourceCost } from "../data/hubData";
@@ -29,6 +30,15 @@ export default function ResourceHub() {
   const [query, setQuery] = useState("");
   const [flagged, setFlagged] = useState<string | null>(null);
 
+  // Curated study planner states
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [studyGoal, setStudyGoal] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedPlan, setGeneratedPlan] = useState("");
+  const [copiedPlan, setCopiedPlan] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const filtered = useMemo(() => {
     return RESOURCES.filter(r => {
       if (level !== "all" && !r.levels.includes(level)) return false;
@@ -46,8 +56,41 @@ export default function ResourceHub() {
     setTimeout(() => setFlagged(null), 2500);
   };
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleGeneratePlan = async () => {
+    if (!studyGoal.trim()) return;
+    setIsGenerating(true);
+    setError(null);
+
+    const selectedResources = RESOURCES.filter(r => selectedIds.includes(r.id)).map(r => ({
+      name: r.name,
+      url: r.url,
+      bestFor: r.bestFor
+    }));
+
+    try {
+      const res = await fetch("/api/generate-study-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resources: selectedResources, studyGoal })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to generate study plan.");
+      setGeneratedPlan(data.studyPlanPrompt);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 pb-24">
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
           <Library className="w-5 h-5 text-amber-400" /> Resource Hub
@@ -96,13 +139,22 @@ export default function ResourceHub() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {filtered.map(r => {
             const cost = COST_LABEL[r.cost];
+            const isSelected = selectedIds.includes(r.id);
             return (
-              <div key={r.id} className="bg-[#0D1225] border border-[#1A2138] rounded-xl p-4 space-y-2.5 flex flex-col">
+              <div key={r.id} className={`bg-[#0D1225] border rounded-xl p-4 space-y-2.5 flex flex-col transition-all duration-150 ${isSelected ? "border-amber-500/50 bg-[#0F1630]" : "border-[#1A2138]"}`}>
                 <div className="flex items-start justify-between gap-2">
-                  <a href={r.url} target="_blank" rel="noreferrer"
-                    className="text-sm font-bold text-white hover:text-amber-300 inline-flex items-center gap-1.5 transition">
-                    {r.name} <ExternalLink className="w-3 h-3 text-slate-500" />
-                  </a>
+                  <div className="flex items-start gap-2.5">
+                    <button
+                      onClick={() => toggleSelect(r.id)}
+                      className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition cursor-pointer ${isSelected ? "bg-amber-500 border-amber-500 text-slate-950" : "border-[#1A2138] bg-[#080C16] hover:border-slate-500"}`}
+                    >
+                      {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                    </button>
+                    <a href={r.url} target="_blank" rel="noreferrer"
+                      className="text-sm font-bold text-white hover:text-amber-300 inline-flex items-center gap-1.5 transition">
+                      {r.name} <ExternalLink className="w-3 h-3 text-slate-500" />
+                    </a>
+                  </div>
                   <span className={`text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded border shrink-0 ${cost.c}`}>{cost.label}</span>
                 </div>
                 <p className="text-[11px] text-slate-400 leading-relaxed flex-1">{r.bestFor}.</p>
@@ -123,6 +175,119 @@ export default function ResourceHub() {
       <p className="text-[10px] text-slate-600 text-center">
         Free-first and piracy-free by design — only official sites and openly-licensed material. "Report" copies a prefilled note for you to log.
       </p>
+
+      {/* Floating curating scheduler bar */}
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#0D1225] border border-amber-500/35 px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-6 z-40 animate-slideUp max-w-[90%] w-[480px]">
+          <div className="flex-1">
+            <span className="text-xs font-bold text-white block">Curated Study Planner</span>
+            <span className="text-[10px] text-slate-400">{selectedIds.length} resource{selectedIds.length > 1 ? "s" : ""} selected</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSelectedIds([])}
+              className="text-[10px] text-slate-400 hover:text-white px-2.5 py-1.5 rounded-lg border border-[#1A2138] bg-[#080C16] cursor-pointer"
+            >
+              Clear
+            </button>
+            <button
+              onClick={() => {
+                setStudyGoal("");
+                setGeneratedPlan("");
+                setError(null);
+                setShowModal(true);
+              }}
+              className="flex items-center gap-1 text-[10px] font-bold text-slate-950 bg-amber-500 hover:bg-amber-400 px-4 py-1.5 rounded-lg transition cursor-pointer"
+            >
+              <Calendar className="w-3 h-3" /> Generate Study Plan
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Goal & Planner modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-[#0D1225] border border-[#1A2138] w-full max-w-2xl rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto relative">
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:text-white bg-[#080C16] border border-[#1A2138] cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-amber-400" /> Create Custom Study Plan
+              </h3>
+              <p className="text-[11px] text-slate-400">
+                Generate a structured syllabus plan incorporating the {selectedIds.length} selected resource{selectedIds.length > 1 ? "s" : ""}.
+              </p>
+            </div>
+
+            {!generatedPlan ? (
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">What is your learning goal?</label>
+                  <textarea
+                    value={studyGoal}
+                    onChange={e => setStudyGoal(e.target.value)}
+                    placeholder="e.g. I want to learn microeconomics concepts to pass my college midterm in 3 weeks. I can study 4 hours a week."
+                    className="w-full h-24 bg-[#080C16] border border-[#1A2138] focus:border-amber-500/50 rounded-xl p-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-none resize-none animate-fadeIn"
+                  />
+                </div>
+
+                {error && <p className="text-xs text-rose-400 font-semibold">{error}</p>}
+
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="px-4 py-2 text-xs font-semibold text-slate-400 bg-[#080C16] border border-[#1A2138] rounded-lg hover:text-white cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleGeneratePlan}
+                    disabled={isGenerating || !studyGoal.trim()}
+                    className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-950 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg cursor-pointer"
+                  >
+                    {isGenerating ? (
+                      <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Generating...</>
+                    ) : (
+                      <>Generate Syllabus Prompt</>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4 animate-fadeIn">
+                <div className="bg-[#080C16] p-4 rounded-xl border border-[#1A2138] font-mono text-[11px] text-slate-300 max-h-[400px] overflow-y-auto whitespace-pre-wrap select-all leading-normal">
+                  {generatedPlan}
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedPlan);
+                      setCopiedPlan(true);
+                      setTimeout(() => setCopiedPlan(false), 2000);
+                    }}
+                    className={`px-4 py-2 text-xs font-bold rounded-lg border cursor-pointer ${copiedPlan ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-400" : "bg-amber-500 hover:bg-amber-400 text-slate-950 border-amber-500"}`}
+                  >
+                    {copiedPlan ? "Copied Study Plan!" : "Copy Study Plan"}
+                  </button>
+                  <button
+                    onClick={() => setGeneratedPlan("")}
+                    className="px-4 py-2 text-xs font-semibold text-slate-400 bg-[#080C16] border border-[#1A2138] rounded-lg hover:text-white cursor-pointer"
+                  >
+                    Back
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

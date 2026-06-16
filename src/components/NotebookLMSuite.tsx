@@ -1,7 +1,8 @@
 import { useState } from "react";
 import {
   GraduationCap, FileText, Tv, Volume2, BookOpen, Network, Layers,
-  Sparkles, Copy, Check, HelpCircle, Target, Rocket
+  Sparkles, Copy, Check, HelpCircle, Target, Rocket,
+  ChevronDown, ChevronUp, ExternalLink
 } from "lucide-react";
 import { STUDENT_LEVELS } from "../data/studentPresets";
 import type { StudentLevel } from "../data/studentPresets";
@@ -135,6 +136,7 @@ export default function NotebookLMSuite() {
   const [customBrief, setCustomBrief] = useState("");
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [copied, setCopied] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   const activeTemplate = TEMPLATES.find(t => t.id === activeTemplateId) || TEMPLATES[0];
 
@@ -154,6 +156,42 @@ export default function NotebookLMSuite() {
     navigator.clipboard.writeText(generatedPrompt);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const exportFlashcardsCSV = () => {
+    const text = generatedPrompt;
+    if (!text) return;
+    const lines = text.split("\n");
+    const cards: [string, string][] = [];
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+      if (trimmed.includes("|")) {
+        const parts = trimmed.split("|");
+        if (parts.length >= 2) {
+          cards.push([parts[0].trim(), parts[1].trim()]);
+          return;
+        }
+      }
+      if (trimmed.includes(":") && !trimmed.includes("://") && !trimmed.startsWith("http") && !trimmed.startsWith("#")) {
+        const parts = trimmed.split(":");
+        if (parts.length === 2 && parts[0].length > 3 && parts[1].length > 3) {
+          cards.push([parts[0].trim(), parts[1].trim()]);
+        }
+      }
+    });
+    if (cards.length === 0) {
+      alert("No flashcards detected in the text. Ensure lines contain front and back text separated by '|' or ':'.");
+      return;
+    }
+    const csvContent = cards
+      .map(row => row.map(val => `"${val.replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `notebooklm-flashcards-${Date.now()}.csv`;
+    a.click();
   };
 
   return (
@@ -238,19 +276,32 @@ export default function NotebookLMSuite() {
         {/* Right: output */}
         <div className="lg:col-span-5 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-[#1A2138] pt-5 lg:pt-0 lg:pl-6">
           <div className="space-y-3">
-            <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-400 block">Instruction template</span>
-            <p className="text-[11px] text-slate-400 leading-relaxed">Paste directly into Gemini, Claude, ChatGPT, or NotebookLM to generate the output.</p>
-            <div className="bg-[#080C16] p-4 rounded-xl border border-[#1A2138] font-mono text-[11px] text-slate-300 min-h-36 max-h-[300px] overflow-y-auto leading-normal select-all whitespace-pre-wrap">
-              {generatedPrompt || <span className="text-slate-600 italic">Pick a level + output type, set your topic, then Build.</span>}
-            </div>
+            <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-400 block">Instruction template / AI Response</span>
+            <p className="text-[11px] text-slate-400 leading-relaxed">Copy the prompt below to your AI. Once the AI generates flashcards, you can paste the response back here to export them as an Anki CSV!</p>
+            <textarea
+              value={generatedPrompt}
+              onChange={e => setGeneratedPrompt(e.target.value)}
+              placeholder="Pick a level + output type, set your topic, then Build. Or paste AI-generated flashcards here to export..."
+              className="w-full h-48 bg-[#080C16] border border-[#1A2138] rounded-xl p-3 font-mono text-[11px] text-slate-300 focus:outline-none focus:border-emerald-600/60 resize-none"
+            />
           </div>
 
           <div className="space-y-3 pt-4">
             {generatedPrompt && (
-              <button onClick={handleCopy}
-                className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold border transition duration-150 cursor-pointer ${copied ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-400" : "bg-emerald-600 hover:bg-emerald-500 border-emerald-600 text-white"}`}>
-                {copied ? <><Check className="w-3.5 h-3.5" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy prompt</>}
-              </button>
+              <div className="flex gap-2">
+                <button onClick={handleCopy}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold border transition duration-150 cursor-pointer ${copied ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-400" : "bg-emerald-600 hover:bg-emerald-500 border-emerald-600 text-white"}`}>
+                  {copied ? <><Check className="w-3.5 h-3.5" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy prompt</>}
+                </button>
+                {(generatedPrompt.includes("|") || generatedPrompt.includes(":")) && (
+                  <button onClick={exportFlashcardsCSV}
+                    className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-lg bg-indigo-950/45 hover:bg-indigo-900/45 text-indigo-400 border border-indigo-900/50 transition cursor-pointer"
+                    title="Export Flashcards to Anki CSV">
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>Export Anki CSV</span>
+                  </button>
+                )}
+              </div>
             )}
             <div className="bg-[#080C16] border border-[#1A2138] p-3.5 rounded-lg flex gap-2 items-start text-[10px] text-slate-500 leading-normal">
               <HelpCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
@@ -261,6 +312,76 @@ export default function NotebookLMSuite() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Visual Upload Guide accordion */}
+      <div className="border-t border-[#1A2138] pt-5 mt-4">
+        <button
+          onClick={() => setShowGuide(!showGuide)}
+          className="flex items-center justify-between w-full p-4 bg-[#080C16] border border-[#1A2138] rounded-xl hover:bg-[#0D1225] hover:border-slate-700 transition duration-150 text-left cursor-pointer"
+        >
+          <div className="flex items-center gap-2">
+            <HelpCircle className="w-4.5 h-4.5 text-emerald-400" />
+            <div>
+              <span className="text-xs font-bold text-white block">NotebookLM & Study Setup Visual Guide</span>
+              <span className="text-[10px] text-slate-400">Step-by-step instructions to upload files, generate audio overviews, and import study materials</span>
+            </div>
+          </div>
+          {showGuide ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+        </button>
+
+        {showGuide && (
+          <div className="mt-3 p-5 bg-[#080C16] border border-[#1A2138] rounded-xl space-y-4 animate-fadeIn">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="space-y-2 p-3 bg-[#0D1225] border border-[#1A2138] rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] font-bold text-emerald-400 bg-emerald-950/45 px-2 py-0.5 rounded-full border border-emerald-900/30">STEP 1</span>
+                </div>
+                <h4 className="text-xs font-bold text-slate-200">Open NotebookLM</h4>
+                <p className="text-[10px] text-slate-400 leading-relaxed">
+                  Go to <a href="https://notebooklm.google" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline inline-flex items-center gap-0.5">NotebookLM <ExternalLink className="w-2.5 h-2.5" /></a> and sign in with your Google account to create a new empty notebook.
+                </p>
+              </div>
+
+              <div className="space-y-2 p-3 bg-[#0D1225] border border-[#1A2138] rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] font-bold text-emerald-400 bg-emerald-950/45 px-2 py-0.5 rounded-full border border-emerald-900/30">STEP 2</span>
+                </div>
+                <h4 className="text-xs font-bold text-slate-200">Upload Your Sources</h4>
+                <p className="text-[10px] text-slate-400 leading-relaxed">
+                  Add documents, slide decks, web URLs, or paste raw notes directly into the Sources panel to build your workspace memory.
+                </p>
+              </div>
+
+              <div className="space-y-2 p-3 bg-[#0D1225] border border-[#1A2138] rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] font-bold text-emerald-400 bg-emerald-950/45 px-2 py-0.5 rounded-full border border-emerald-900/30">STEP 3</span>
+                </div>
+                <h4 className="text-xs font-bold text-slate-200">Inject Dialogue Prompts</h4>
+                <p className="text-[10px] text-slate-400 leading-relaxed">
+                  Go to "Notebook Guide" at the bottom right. Under "Audio Overview", click "Customize" and paste your generated script prompts.
+                </p>
+              </div>
+
+              <div className="space-y-2 p-3 bg-[#0D1225] border border-[#1A2138] rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] font-bold text-emerald-400 bg-emerald-950/45 px-2 py-0.5 rounded-full border border-emerald-900/30">STEP 4</span>
+                </div>
+                <h4 className="text-xs font-bold text-slate-200">Generate & Study</h4>
+                <p className="text-[10px] text-slate-400 leading-relaxed">
+                  Click "Generate" to synthesize your audio summary, or use the flashcard prompts to output cards, paste them here, and download to Anki.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-emerald-950/10 border border-emerald-900/30 rounded-lg text-[10px] text-slate-300">
+              <span className="flex items-center gap-1.5"><Rocket className="w-3.5 h-3.5 text-emerald-400" /> Pro-tip: Customizing audio ensures the hosts focus on your exact exam scope!</span>
+              <a href="https://notebooklm.google" target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition duration-150 flex items-center gap-1">
+                Open NotebookLM <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

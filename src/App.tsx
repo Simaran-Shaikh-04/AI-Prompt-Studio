@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bot, Sparkles, Link2, GraduationCap, Image as ImageIcon, Library, KeyRound, AlertTriangle, X } from "lucide-react";
+import { Bot, Sparkles, Link2, GraduationCap, Image as ImageIcon, Library, KeyRound, AlertTriangle, X, History } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 import PromptForge from "./components/PromptForge";
@@ -8,7 +8,9 @@ import StudentSuite from "./components/StudentSuite";
 import ImagePromptStudio from "./components/ImagePromptStudio";
 import ResourceHub from "./components/ResourceHub";
 import ApiKeyModal from "./components/ApiKeyModal";
+import HistoryDrawer from "./components/HistoryDrawer";
 import { hasApiKey } from "./lib/api";
+import { setCurrentTool } from "./lib/history";
 
 type MainTab = "forge" | "bridge" | "student" | "image" | "resources";
 
@@ -78,6 +80,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<MainTab>("forge");
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [keyModalOpen, setKeyModalOpen] = useState(false);
+  const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false);
 
   // Open the setup modal on first visit (no key yet), and whenever the server
   // reports a missing key (401 from any /api/ call).
@@ -87,6 +90,14 @@ export default function App() {
     window.addEventListener("api-key-required", onRequired);
     return () => window.removeEventListener("api-key-required", onRequired);
   }, []);
+
+  // Synchronize active tab with history tool name
+  useEffect(() => {
+    const tabDef = TABS.find(t => t.id === activeTab);
+    if (tabDef) {
+      setCurrentTool(tabDef.label);
+    }
+  }, [activeTab]);
 
   const activeTabDef = TABS.find(t => t.id === activeTab)!;
 
@@ -109,13 +120,22 @@ export default function App() {
                 <span className="text-[9px] font-mono tracking-widest uppercase bg-[#111828] text-indigo-400 px-2 py-0.5 rounded border border-indigo-900/50">v2.0</span>
               </h1>
               <p className="text-[11px] text-slate-600 leading-tight">
-                Prompt engineering for free AI models — no ChatGPT required
+                Prompt engineering for free AI models — no paid plans required
               </p>
             </div>
           </div>
 
           {/* Right side: API key + active tab indicator */}
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setHistoryDrawerOpen(true)}
+              className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg border border-[#1A2138] bg-[#080C16] text-slate-300 hover:text-white transition cursor-pointer"
+              title="View your clipboard/prompt history"
+            >
+              <History className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="hidden sm:inline">History</span>
+            </button>
+
             <button
               onClick={() => setKeyModalOpen(true)}
               className={`flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg border transition cursor-pointer ${hasApiKey() ? "text-emerald-400 bg-emerald-950/20 border-emerald-900/50 hover:border-emerald-700/60" : "text-amber-400 bg-amber-950/20 border-amber-900/50 hover:border-amber-700/60"}`}
@@ -211,11 +231,12 @@ export default function App() {
 
       {/* ── FOOTER ─────────────────────────────────────────────────────────────── */}
       <footer className="border-t border-[#151C30] py-5 mt-12 text-center text-[11px] text-slate-700">
-        <p>AI Prompt Studio · Free AI tools only · Gemini, NotebookLM, Claude, Perplexity, Mistral, DeepSeek, Grok</p>
+        <p>AI Prompt Studio · Free AI tools only · Gemini, NotebookLM, ChatGPT, Claude, Perplexity, Mistral, DeepSeek, Grok</p>
         <p className="mt-1 text-slate-800">No data stored externally · Powered by Gemini API on server</p>
       </footer>
 
       <ApiKeyModal open={keyModalOpen} onClose={() => setKeyModalOpen(false)} />
+      <HistoryDrawer open={historyDrawerOpen} onClose={() => setHistoryDrawerOpen(false)} />
     </div>
   );
 }

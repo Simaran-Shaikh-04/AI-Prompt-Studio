@@ -267,14 +267,7 @@ app.post("/api/forge-prompt", checkApiKey, async (req, res) => {
     });
 
     return res.json(JSON.parse(response.text?.trim() || "{}"));
-  } catch (error: any) {
-    console.error("forge-prompt error:", error);
-    return res.status(500).json({ error: error.message || "Failed to forge prompt." });
-  }
-});
-
-// ─── NEW: Generate context bridge for cross-AI continuation ───────────────────
-app.post("/api/bridge-context", checkApiKey, async (req, res) => {
+  } app.post("/api/bridge-context", checkApiKey, async (req, res) => {
   try {
     const {
       sourceModelId,
@@ -331,7 +324,8 @@ app.post("/api/bridge-context", checkApiKey, async (req, res) => {
       `   - Is ready to paste into ${targetModelName} and immediately continue work\n` +
       `   - If system prompt support: include a SYSTEM section for context + USER section for the continuation task\n` +
       `4. Generate 3-5 reflective questions to help the user refine or focus the bridge (based on what gaps or ambiguities you spotted in the history)\n` +
-      `Keep questions specific and answerable. Fewer questions for clear/short histories.`;
+      `   Keep questions specific and answerable. Fewer questions for clear/short histories.\n` +
+      `5. Extract a list of key variables/decisions (as 3-6 key-value pairs) from the history. Focus on: primary programming languages, frameworks, state choices, or core parameters.`;
 
     const userMessage =
       `PREVIOUS AI (SOURCE): ${sourceModelName || "Unknown AI"}\n` +
@@ -372,6 +366,18 @@ app.post("/api/bridge-context", checkApiKey, async (req, res) => {
               type: Type.STRING,
               description: "The complete, ready-to-paste continuation prompt optimized for the target AI model."
             },
+            extractedVariables: {
+              type: Type.ARRAY,
+              description: "Key technical choices or parameters extracted from the conversation history.",
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  key: { type: Type.STRING, description: "e.g., Primary Language, State Management, Database" },
+                  value: { type: Type.STRING, description: "e.g., TypeScript, Redux Toolkit, SQLite" }
+                },
+                required: ["key", "value"]
+              }
+            },
             reflectiveQuestions: {
               type: Type.ARRAY,
               items: {
@@ -386,7 +392,7 @@ app.post("/api/bridge-context", checkApiKey, async (req, res) => {
               description: "3-5 questions to refine the bridge prompt, based on gaps found in the conversation history."
             }
           },
-          required: ["contextSummary", "bridgePrompt", "reflectiveQuestions"]
+          required: ["contextSummary", "bridgePrompt", "extractedVariables", "reflectiveQuestions"]
         }
       }
     });
@@ -398,7 +404,7 @@ app.post("/api/bridge-context", checkApiKey, async (req, res) => {
   }
 });
 
-// ─── NEW: Enhance an image prompt ─────────────────────────────────────────────
+// ─── Enhance an image prompt ─────────────────────────────────────────────
 app.post("/api/enhance-image", checkApiKey, async (req, res) => {
   try {
     const { prompt, model, dialect } = req.body;
@@ -423,6 +429,41 @@ app.post("/api/enhance-image", checkApiKey, async (req, res) => {
     return res.json({ enhanced });
   } catch (error: any) {
     return res.status(500).json({ error: error.message || "Failed to enhance prompt." });
+  }
+});
+
+// ─── NEW: Generate study plan ─────────────────────────────────────────────────
+app.post("/api/generate-study-plan", checkApiKey, async (req, res) => {
+  try {
+    const { resources, studyGoal } = req.body;
+    if (!resources || !Array.isArray(resources) || resources.length === 0) {
+      return res.status(400).json({ error: "Select at least one learning resource." });
+    }
+    if (!studyGoal?.trim()) return res.status(400).json({ error: "Study goal is required." });
+
+    const systemInstruction =
+      "You are a master Academic Advisor and Curriculum Designer.\n" +
+      "Your task is to generate a comprehensive, highly structured study plan and prompt based *only* on the selected learning resources and the user's study goal.\n" +
+      "The plan must include: a weekly syllabus, specific projects/checkpoints to build, and direct instructions on how to use each selected resource.\n" +
+      "Return the response in markdown format, wrapping the final study syllabus prompt inside a copy-pasteable box.";
+
+    const promptText =
+      `STUDY GOAL: "${studyGoal}"\n\n` +
+      `SELECTED RESOURCES:\n` +
+      resources.map((r: any) => `- ${r.name} (${r.url}): ${r.bestFor}`).join("\n") +
+      `\n\nGenerate the complete structured study plan and copy-pasteable prompt now.`;
+
+    const response = await getAI(req).models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: promptText,
+      config: { systemInstruction }
+    });
+
+    const studyPlanPrompt = response.text?.trim() || "";
+    if (!studyPlanPrompt) return res.status(500).json({ error: "Empty response from AI." });
+    return res.json({ studyPlanPrompt });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message || "Failed to generate study plan." });
   }
 });
 
