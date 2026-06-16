@@ -39,34 +39,210 @@ export default function CareerHub() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const getRoadmapLevels = (r: CareerResource) => {
+    // If it is SQL/Data Analysis
+    if (
+      r.id.includes("sql") ||
+      r.id === "maven-analytics" ||
+      r.id === "leetcode-sql" ||
+      r.id === "mode-sql" ||
+      r.id === "sqlbolt" ||
+      r.id === "sqlzoo" ||
+      r.id === "kaggle-sql" ||
+      r.id === "w3-sql"
+    ) {
+      return [
+        { level: "Level 0: Absolute Beginner (Orientation)", goal: "Setup and Relational Database Basics", detail: "Understand databases vs spreadsheets. Set up local SQL environment (SQLite/PostgreSQL) or work on browser sandboxes. Master SELECT, FROM, and LIMIT commands." },
+        { level: "Level 1: Novice (Fundamentals)", goal: "Basic Data Filtering & Aggregations", detail: "Master SQL filter operators (WHERE, AND, OR, IN, LIKE, BETWEEN). Learn grouping and aggregating data: COUNT, SUM, AVG, MIN, MAX, GROUP BY, and HAVING." },
+        { level: "Level 2: Intermediate (Application)", goal: "Table Joins & Nested Queries", detail: "Master database relationships. Write INNER JOIN, LEFT JOIN, RIGHT JOIN, and FULL OUTER JOIN. Practice subqueries to query tables within queries." },
+        { level: "Level 3: Competent (Advanced Techniques)", goal: "CTEs, Case Logic & Window Functions", detail: "Write Common Table Expressions (CTEs) for clean script structure. Master analytics Window Functions (ROW_NUMBER, RANK, LEAD, LAG) and conditional CASE WHEN logic." },
+        { level: "Level 4: Proficient (Systems & Architecture)", goal: "Schema Design & Performance Tuning", detail: "Understand database normalization rules. Learn to construct tables, primary/foreign keys, write database views, and implement INDEXES to optimize query performance." },
+        { level: "Level 5: Complete Mastery (Enterprise)", goal: "Scale, Security & BI Dashboards integration", detail: "Practice writing stored procedures and database triggers. Set up backup protocols, secure user access controls, and build pipelines to feed SQL data into BI tools (Power BI/Tableau)." }
+      ];
+    }
+
+    // AI or Emerging Roles
+    if (
+      r.id === "learn-prompting" ||
+      r.id === "deeplearning-ai" ||
+      r.id === "bubble-academy" ||
+      r.id === "webflow-univ" ||
+      r.id === "cryptozombies"
+    ) {
+      return [
+        { level: "Level 0: Absolute Beginner (Orientation)", goal: "Understanding the Ecosystem & Mechanics", detail: "Learn key vocabulary, prompt structures, or no-code drag-and-drop builder components. Create builder accounts and review the documentation." },
+        { level: "Level 1: Novice (Fundamentals)", goal: "Core Workflows & Basic Builds", detail: "Construct simple, functional prototypes or execute basic tasks. Learn logic rules, layout adjustments, and initial parameter configurations." },
+        { level: "Level 2: Intermediate (Application)", goal: "API Connectors & Third-Party Integrations", detail: "Connect your builder tools to database APIs, vector storage, or external plugins. Build a portfolio of 3-5 functional web tools." },
+        { level: "Level 3: Competent (Advanced Techniques)", goal: "Custom Logic & Prompt Chain Optimizations", detail: "Refine logic workflows, handle exceptions, structure robust state management, and write optimized prompt chains. Focus on performance tuning." },
+        { level: "Level 4: Proficient (Systems & Architecture)", goal: "Production-ready scaling", detail: "Deploy live applications or automated AI agent clusters. Structure backends for production workloads and optimize page loading times." },
+        { level: "Level 5: Complete Mastery (Enterprise)", goal: "Security Auditing & Global Deployments", detail: "Audit application/smart contract security vulnerabilities, ensure complete access control compliance, and deploy enterprise products to global users." }
+      ];
+    }
+
+    // Default Commerce/B.Com Pathways (CA, CS, CPA, CMA, CFA, ESG, etc.)
+    return [
+      { level: "Level 0: Absolute Beginner (Orientation)", goal: "Financial Literacy & Corporate Structures", detail: "Learn double-entry bookkeeping rules, legal entity definitions, basic tax codes, and financial reporting terminology." },
+      { level: "Level 1: Novice (Fundamentals)", goal: "Transactions, Basic Auditing & Professional Foundations", detail: "Learn to prepare journal entries, construct balance sheets, verify general ledgers, and clear intermediate professional exams." },
+      { level: "Level 2: Intermediate (Application)", goal: "Corporate Compliance, Statutory Audits & Internships", detail: "Perform regulatory compliance filings, conduct physical inventory checks, study corporate law details, and complete articleship training." },
+      { level: "Level 3: Competent (Advanced Techniques)", goal: "Strategic Costing, Valuation & Professional Licensing", detail: "Study advanced corporate taxation laws, portfolio theories, corporate valuation metrics, and clear final licensing exams." },
+      { level: "Level 4: Proficient (Systems & Analytics)", goal: "Forensic Investigations, BI Dashboards & System Audits", detail: "Deploy BI tools (Excel, Power BI) to automate reporting. Learn forensic accounting techniques to identify fraud and trace shell transactions." },
+      { level: "Level 5: Complete Mastery (Leadership)", goal: "CFO Advisory, Risk Management & Corporate Strategy", detail: "Lead corporate restructuring (M&A), design global risk hedging strategies, arbitrate shareholder legal disputes, and direct financial strategy." }
+    ];
+  };
+
   const downloadRoadmap = (r: CareerResource, categoryTitle: string) => {
-    const markdownContent = `# Career Roadmap: ${r.name}
-**Category:** ${categoryTitle}
-**AI Impact Classification:** ${r.aiClassification === 'resistant' ? '🛡️ AI-Resistant' : r.aiClassification === 'augmented' ? '🤖 AI-Augmented' : 'Standard'}
-**Industry Reputation:** ${r.reputation}
+    const levels = getRoadmapLevels(r);
 
-## 🎯 Target Skills to Master
-${r.skills.map(s => `- ${s}`).join("\n")}
+    const docHtml = `
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta charset="utf-8">
+<title>Career Roadmap: ${r.name}</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    line-height: 1.6;
+    color: #2D3748;
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+  }
+  h1 {
+    color: #1E3A8A;
+    font-size: 24px;
+    border-bottom: 2px solid #3B82F6;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+  }
+  h2 {
+    color: #2563EB;
+    font-size: 16px;
+    margin-top: 25px;
+    border-bottom: 1px solid #E2E8F0;
+    padding-bottom: 4px;
+  }
+  p {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  .meta-box {
+    background-color: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 25px;
+  }
+  .meta-title {
+    font-weight: bold;
+    color: #475569;
+    font-size: 10px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .meta-value {
+    font-size: 12px;
+    color: #1E293B;
+    margin-bottom: 8px;
+  }
+  .level-card {
+    background-color: #FFFFFF;
+    border-left: 4px solid #3B82F6;
+    padding: 12px;
+    margin-bottom: 12px;
+    border-top: 1px solid #E2E8F0;
+    border-right: 1px solid #E2E8F0;
+    border-bottom: 1px solid #E2E8F0;
+    border-radius: 0 8px 8px 0;
+  }
+  .level-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #1E3A8A;
+    margin-bottom: 2px;
+  }
+  .level-goal {
+    font-size: 11px;
+    font-weight: 600;
+    color: #4F46E5;
+    margin-bottom: 6px;
+  }
+  .level-detail {
+    font-size: 11px;
+    color: #4A5568;
+    line-height: 1.4;
+  }
+  .footer {
+    text-align: center;
+    font-size: 9px;
+    color: #94A3B8;
+    margin-top: 40px;
+    border-top: 1px solid #E2E8F0;
+    padding-top: 10px;
+  }
+</style>
+</head>
+<body>
 
-## 📋 Required Qualifications & Milestones
-${r.qualifications && r.qualifications.length > 0 
-  ? r.qualifications.map((q, idx) => `${idx + 1}. ${q}`).join("\n") 
-  : "- Self-taught project portfolio & open certifications"}
+  <h1>Career Mastery Roadmap: ${r.name}</h1>
+  
+  <div class="meta-box">
+    <div class="meta-title">Field / Category</div>
+    <div class="meta-value">${categoryTitle}</div>
+    
+    <div class="meta-title">AI Impact Classification</div>
+    <div class="meta-value">${
+      r.aiClassification === "resistant"
+        ? "🛡️ AI-Resistant (Requires human compliance, regulatory law & qualitative audit)"
+        : r.aiClassification === "augmented"
+        ? "🤖 AI-Augmented (Leverages quantitative algorithms, models & BI dashboards)"
+        : "Standard"
+    }</div>
+    
+    <div class="meta-title">Industry Reputation</div>
+    <div class="meta-value">${r.reputation}</div>
+    
+    <div class="meta-title">Recommended Platform</div>
+    <div class="meta-value">${r.name} (${r.url})</div>
+  </div>
 
-## 📚 Recommended Courses & Learning Websites
-- **Recommended platform:** ${r.name}
-- **Access URL:** [${r.name}](${r.url})
-- **Best For:** ${r.bestFor}
-- **Cost Structure:** ${r.cost.toUpperCase()}
+  <h2>🎯 Target Skills to Master</h2>
+  <p>${r.skills.join(" · ")}</p>
 
----
-*Generated by AI Prompt Scoping Studio - Career & Skills Hub.*
+  <h2>📈 Roadmap from 0 to 5 Complete Mastery</h2>
+  
+  ${levels
+    .map(
+      lvl => `
+    <div class="level-card">
+      <div class="level-title">${lvl.level}</div>
+      <div class="level-goal">Goal: ${lvl.goal}</div>
+      <div class="level-detail">${lvl.detail}</div>
+    </div>
+  `
+    )
+    .join("")}
+
+  <h2>📋 Core Career Qualifications & Milestones</h2>
+  <ul>
+    ${
+      r.qualifications && r.qualifications.length > 0
+        ? r.qualifications.map(q => `<li>${q}</li>`).join("")
+        : `<li>Self-study portfolio & practical tools built using ${r.name}</li>`
+    }
+  </ul>
+
+  <div class="footer">
+    Generated by AI Prompt Scoping Studio - Career & Skills Hub.
+  </div>
+
+</body>
+</html>
 `;
 
-    const blob = new Blob([markdownContent], { type: "text/markdown;charset=utf-8;" });
+    const blob = new Blob([docHtml], { type: "application/msword;charset=utf-8;" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `roadmap-${r.id}.md`;
+    a.download = `roadmap-${r.id}.doc`;
     a.click();
   };
 
