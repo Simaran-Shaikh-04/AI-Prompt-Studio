@@ -18,6 +18,7 @@ const TOOL_COLOR: Record<string, string> = {
   "Student Suite": "text-emerald-300 bg-emerald-950/40 border-emerald-900/50",
   "Image Studio": "text-rose-300 bg-rose-950/40 border-rose-900/50",
   "Resource Hub": "text-amber-300 bg-amber-950/40 border-amber-900/50",
+  "Career Hub": "text-violet-300 bg-violet-950/40 border-violet-900/50",
 };
 
 export default function HistoryDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {

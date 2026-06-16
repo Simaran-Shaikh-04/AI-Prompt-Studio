@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bot, Sparkles, Link2, GraduationCap, Image as ImageIcon, Library, KeyRound, AlertTriangle, X, History } from "lucide-react";
+import { Bot, Sparkles, Link2, GraduationCap, Image as ImageIcon, Library, KeyRound, AlertTriangle, X, History, Briefcase } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 import PromptForge from "./components/PromptForge";
@@ -9,10 +9,11 @@ import ImagePromptStudio from "./components/ImagePromptStudio";
 import ResourceHub from "./components/ResourceHub";
 import ApiKeyModal from "./components/ApiKeyModal";
 import HistoryDrawer from "./components/HistoryDrawer";
+import CareerHub from "./components/CareerHub";
 import { hasApiKey } from "./lib/api";
 import { setCurrentTool } from "./lib/history";
 
-type MainTab = "forge" | "bridge" | "student" | "image" | "resources";
+type MainTab = "forge" | "bridge" | "student" | "image" | "resources" | "career";
 
 const TABS: {
   id: MainTab;
@@ -73,6 +74,16 @@ const TABS: {
     activeBg: "bg-amber-950/20",
     underlineBg: "bg-amber-500",
     accentHex: "#F59E0B"
+  },
+  {
+    id: "career",
+    label: "Career Hub",
+    icon: Briefcase,
+    desc: "SQL, B.Com pathways & Emerging roles",
+    activeText: "text-violet-400",
+    activeBg: "bg-violet-950/20",
+    underlineBg: "bg-violet-500",
+    accentHex: "#8B5CF6"
   }
 ];
 
@@ -225,6 +236,7 @@ export default function App() {
             {activeTab === "student"   && <StudentSuite />}
             {activeTab === "image"     && <ImagePromptStudio />}
             {activeTab === "resources" && <ResourceHub />}
+            {activeTab === "career"    && <CareerHub />}
           </motion.div>
         </AnimatePresence>
       </main>
