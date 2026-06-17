@@ -120,6 +120,20 @@ const PLATFORMS: Platform[] = [
 
 const labelOf = (opts: Opt[], id: string) => opts.find(o => o.id === id)?.label || "";
 
+const getAspectPreviewStyle = (ar: string) => {
+  const parts = ar.split(":");
+  const w = parseInt(parts[0], 10);
+  const h = parseInt(parts[1], 10);
+  if (w === h) return { width: "22px", height: "22px" };
+  if (w > h) {
+    const ratio = h / w;
+    return { width: "28px", height: `${Math.round(28 * ratio)}px` };
+  } else {
+    const ratio = w / h;
+    return { width: `${Math.round(28 * ratio)}px`, height: "28px" };
+  }
+};
+
 export default function ImagePromptStudio() {
   const [mode, setMode] = useState<"build" | "enhance">("build");
   const [modelId, setModelId] = useState("gemini");
@@ -129,6 +143,9 @@ export default function ImagePromptStudio() {
   const [negative, setNegative] = useState("");
   const [aspect, setAspect] = useState("1:1");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ style: true });
+
+  const [platformCategory, setPlatformCategory] = useState<"all" | "social" | "web" | "print">("all");
+  const [platformOpen, setPlatformOpen] = useState(false);
 
   const [image, setImage] = useState<{ previewUrl: string; mimeType: string; data: string } | null>(null);
   const [output, setOutput] = useState("");
@@ -285,23 +302,64 @@ export default function ImagePromptStudio() {
             </p>
           </div>
 
-          {/* platform templates */}
-          <div className="space-y-2">
-            <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Platform template (sets size + intent)</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {PLATFORMS.map(p => {
-                const Icon = p.icon; const on = platformId === p.id;
-                return (
-                  <button key={p.id} onClick={() => pickPlatform(p)}
-                    className={`text-left p-2.5 rounded-lg border transition cursor-pointer ${on ? "bg-rose-950/20 border-rose-700/50" : "bg-[#080C16] border-[#1A2138] hover:border-slate-700"}`}>
-                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-200">
-                      <Icon className="w-3.5 h-3.5 text-slate-400 shrink-0" /> {p.name}
-                    </span>
-                    <span className="text-[9px] text-slate-500 block mt-0.5">{p.hint} · <span className="font-mono">{p.aspect}</span></span>
-                  </button>
-                );
-              })}
-            </div>
+          {/* platform templates (collapsible preset card) */}
+          <div className="bg-[#080C16] border border-[#1A2138] rounded-xl overflow-hidden">
+            <button onClick={() => setPlatformOpen(!platformOpen)} className="w-full flex items-center justify-between gap-2 p-3 cursor-pointer hover:bg-[#0D1225] transition">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                📐 Platform Layout Presets
+              </span>
+              <span className="flex items-center gap-2">
+                {platform ? (
+                  <span className="text-[10px] text-rose-300 font-semibold">{platform.name} ({platform.aspect})</span>
+                ) : (
+                  <span className="text-[10px] text-slate-500 italic">Custom Ratio ({aspect})</span>
+                )}
+                <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform ${platformOpen ? "rotate-180" : ""}`} />
+              </span>
+            </button>
+            {platformOpen && (
+              <div className="p-3 pt-0 space-y-3">
+                {/* category filter bar */}
+                <div className="flex flex-wrap gap-1 border-b border-[#1A2138]/60 pb-2">
+                  {(["all", "social", "web", "print"] as const).map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setPlatformCategory(cat)}
+                      className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition cursor-pointer ${
+                        platformCategory === cat
+                          ? "bg-rose-950/40 border-rose-900/60 text-rose-300"
+                          : "bg-[#0D1225] border-[#1A2138] text-slate-500 hover:text-slate-300"
+                      }`}
+                    >
+                      {cat === "all" ? "All Presets" : cat === "social" ? "Social Media" : cat === "web" ? "Web & Video" : "Print & Assets"}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* buttons list */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-60 overflow-y-auto pr-1 scrollbar-thin">
+                  {PLATFORMS.filter(p => {
+                    if (platformCategory === "all") return true;
+                    const cat = p.id.startsWith("ig-") || p.id === "tiktok" || p.id === "x-post" || p.id === "fb-cover" || p.id === "pin" || p.id.startsWith("li-") ? "social"
+                      : p.id === "slide" || p.id === "blog" || p.id === "ad" || p.id === "yt-thumb" || p.id === "yt-banner" || p.id === "app-icon" || p.id.startsWith("wall-") ? "web"
+                      : "print";
+                    return cat === platformCategory;
+                  }).map(p => {
+                    const Icon = p.icon;
+                    const on = platformId === p.id;
+                    return (
+                      <button key={p.id} onClick={() => pickPlatform(p)}
+                        className={`text-left p-2.5 rounded-lg border transition cursor-pointer ${on ? "bg-rose-950/20 border-rose-700/50" : "bg-[#0D1225] border-[#1A2138] hover:border-slate-700"}`}>
+                        <span className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-200">
+                          <Icon className="w-3.5 h-3.5 text-slate-400 shrink-0" /> {p.name}
+                        </span>
+                        <span className="text-[9px] text-slate-500 block mt-0.5">{p.hint} · <span className="font-mono">{p.aspect}</span></span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* subject */}
@@ -366,20 +424,35 @@ export default function ImagePromptStudio() {
 
           {/* aspect + negative */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Aspect ratio</label>
-              <div className="flex flex-wrap gap-1.5">
+              
+              <div className="flex items-center gap-3 bg-[#080C16] border border-[#1A2138] p-3 rounded-xl mb-2">
+                {/* Visual Shape */}
+                <div className="w-10 h-10 flex items-center justify-center bg-[#0D1225] border border-[#1A2138] rounded-lg shrink-0">
+                  <div 
+                    className="border border-dashed border-rose-500/60 bg-rose-500/10 rounded transition-all duration-300"
+                    style={getAspectPreviewStyle(aspect)}
+                  />
+                </div>
+                <div className="space-y-0.5">
+                  <span className="text-[11px] font-bold text-slate-200">Ratio: {aspect}</span>
+                  <p className="text-[9px] text-slate-500 leading-none">Selected output dimensions</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-1">
                 {ASPECTS.map(a => (
                   <button key={a} onClick={() => { setAspect(a); setPlatformId(null); reset(); }}
-                    className={`text-[10px] font-mono px-2.5 py-1.5 rounded-lg border transition cursor-pointer ${aspect === a ? "bg-rose-600 border-rose-500 text-white font-semibold" : "bg-[#080C16] border-[#1A2138] text-slate-400 hover:text-slate-200"}`}>{a}</button>
+                    className={`text-[9px] font-mono px-2 py-1 rounded-lg border transition cursor-pointer ${aspect === a ? "bg-gradient-to-br from-rose-600 to-rose-700 border-rose-500 text-white font-semibold" : "bg-[#080C16] border-[#1A2138] text-slate-400 hover:text-slate-200"}`}>{a}</button>
                 ))}
               </div>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Avoid / exclude (optional)</label>
               <input type="text" value={negative} onChange={e => { setNegative(e.target.value); reset(); }}
                 placeholder="text, watermark, extra fingers, blur"
-                className="w-full bg-[#080C16] border border-[#1A2138] rounded-lg p-2.5 text-[11px] text-slate-300 placeholder-slate-600 focus:outline-none focus:border-rose-600/60" />
+                className="w-full bg-[#080C16] border border-[#1A2138] rounded-xl p-3 text-xs text-slate-200 placeholder-slate-700 focus:outline-none focus:border-rose-600/60" />
               <p className="text-[9px] text-slate-600">Applied per model — sentence, --no, or a Negative prompt field.</p>
             </div>
           </div>

@@ -408,11 +408,10 @@ app.post("/api/bridge-context", checkApiKey, async (req, res) => {
     return res.status(500).json({ error: error.message || "Failed to generate bridge prompt." });
   }
 });
-
 // ─── Enhance an image prompt ─────────────────────────────────────────────
 app.post("/api/enhance-image", checkApiKey, async (req, res) => {
   try {
-    const { prompt, model, dialect } = req.body;
+    const { prompt, model, dialect, image } = req.body;
     if (!prompt?.trim()) return res.status(400).json({ error: "Prompt is required." });
 
     const systemInstruction =
@@ -423,9 +422,19 @@ app.post("/api/enhance-image", checkApiKey, async (req, res) => {
       `weighted = comma tokens, optional (token:1.2) weights, then a separate line beginning "Negative prompt:".\n` +
       `Return ONLY the final prompt text.`;
 
+    const contentParts: any[] = [{ text: prompt }];
+    if (image?.data && image?.mimeType) {
+      contentParts.push({
+        inlineData: {
+          mimeType: image.mimeType,
+          data: image.data
+        }
+      });
+    }
+
     const response = await getAI(req).models.generateContent({
       model: "gemini-2.5-flash",
-      contents: prompt,
+      contents: [{ role: "user", parts: contentParts }],
       config: { systemInstruction }
     });
 
