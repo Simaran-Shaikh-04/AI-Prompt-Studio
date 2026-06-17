@@ -1,13 +1,14 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Sparkles, Copy, Check, RotateCcw, ExternalLink,
   UploadCloud, FileCheck, X,
   ArrowRight, Lightbulb, RefreshCw, Download,
-  ChevronLeft, ChevronRight, BookOpen
+  ChevronLeft, ChevronRight, BookOpen, KeyRound, ShieldCheck
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { AI_MODELS } from "../data";
 import { Attachment, Question } from "../types";
+import { hasApiKey, setApiKey } from "../lib/api";
 
 interface ForgeResult {
   forgedPrompt: string;
@@ -23,6 +24,25 @@ export default function PromptForge() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<ForgeResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // API key banner states
+  const [keyMissing, setKeyMissing] = useState(!hasApiKey());
+  const [bannerKeyVal, setBannerKeyVal] = useState("");
+  const [showBannerKey, setShowBannerKey] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setKeyMissing(!hasApiKey());
+    }, 500);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleSaveBannerKey = () => {
+    if (!bannerKeyVal.trim()) return;
+    setApiKey(bannerKeyVal);
+    setKeyMissing(false);
+    setBannerKeyVal("");
+  };
 
   // Reflective questions state
   const [showQuestions, setShowQuestions] = useState(false);
@@ -239,6 +259,111 @@ export default function PromptForge() {
           </button>
         )}
       </div>
+
+      {/* Key Missing Step-by-Step Tutorial Banner */}
+      <AnimatePresence>
+        {keyMissing && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-gradient-to-br from-indigo-950/25 to-slate-950/30 border border-indigo-900/50 rounded-2xl p-5 space-y-4 shadow-xl relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+            
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-xl bg-indigo-950/60 border border-indigo-800/50 shrink-0">
+                <KeyRound className="w-5 h-5 text-indigo-400 animate-pulse" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  🔑 Get a Free Gemini API Key to Activate All AI Features
+                </h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  AI Prompt Studio runs directly on the Google Gemini model. To generate prompts and use all tools, you need a free API key. It takes less than 30 seconds to set up.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+              {/* Step 1 */}
+              <div className="bg-[#080C16]/60 border border-[#1A2138] rounded-xl p-3.5 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-indigo-950 text-indigo-300 text-[10px] font-bold flex items-center justify-center border border-indigo-800/50">1</span>
+                  <span className="text-xs font-bold text-slate-200">Open AI Studio</span>
+                </div>
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  Open Google AI Studio and sign in with any Google account (Gmail is free).
+                </p>
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition mt-1"
+                >
+                  Go to Google AI Studio <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+
+              {/* Step 2 */}
+              <div className="bg-[#080C16]/60 border border-[#1A2138] rounded-xl p-3.5 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-indigo-950 text-indigo-300 text-[10px] font-bold flex items-center justify-center border border-indigo-800/50">2</span>
+                  <span className="text-xs font-bold text-slate-200">Generate Key</span>
+                </div>
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  Click the blue <strong>"Create API key"</strong> button, select a new project, and copy the key string.
+                </p>
+              </div>
+
+              {/* Step 3 */}
+              <div className="bg-[#080C16]/60 border border-[#1A2138] rounded-xl p-3.5 space-y-2 flex flex-col justify-between">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-indigo-950 text-indigo-300 text-[10px] font-bold flex items-center justify-center border border-indigo-800/50">3</span>
+                    <span className="text-xs font-bold text-slate-200">Paste & Save</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    Paste the key below to activate all AI features instantly.
+                  </p>
+                </div>
+                
+                <div className="relative mt-2">
+                  <input
+                    type={showBannerKey ? "text" : "password"}
+                    value={bannerKeyVal}
+                    onChange={e => setBannerKeyVal(e.target.value)}
+                    placeholder="Paste AIzaSy..."
+                    className="w-full bg-[#0D1225] border border-[#1A2138] focus:border-indigo-600/60 rounded-lg pl-2.5 pr-12 py-1.5 text-xs text-slate-200 placeholder-slate-700 focus:outline-none font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowBannerKey(s => !s)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-500 hover:text-slate-300 cursor-pointer"
+                  >
+                    {showBannerKey ? "Hide" : "Show"}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1 border-t border-[#1A2138]/40">
+              <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>Your key is saved only in this browser's local storage and is never sent to external servers.</span>
+              </div>
+              
+              <button
+                onClick={handleSaveBannerKey}
+                disabled={!bannerKeyVal.trim()}
+                className="w-full sm:w-auto px-5 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer disabled:opacity-40 transition"
+              >
+                Activate Workspace
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Error */}
       <AnimatePresence>

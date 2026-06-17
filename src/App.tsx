@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bot, Sparkles, Link2, GraduationCap, Image as ImageIcon, Library, KeyRound, AlertTriangle, X, History, Briefcase } from "lucide-react";
+import { Bot, Sparkles, Link2, GraduationCap, Image as ImageIcon, Library, KeyRound, AlertTriangle, X, History, Briefcase, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 import PromptForge from "./components/PromptForge";
@@ -10,10 +10,11 @@ import ResourceHub from "./components/ResourceHub";
 import ApiKeyModal from "./components/ApiKeyModal";
 import HistoryDrawer from "./components/HistoryDrawer";
 import CareerHub from "./components/CareerHub";
+import UserManual from "./components/UserManual";
 import { hasApiKey } from "./lib/api";
 import { setCurrentTool } from "./lib/history";
 
-type MainTab = "forge" | "bridge" | "student" | "image" | "resources" | "career";
+type MainTab = "forge" | "bridge" | "student" | "image" | "resources" | "career" | "guide";
 
 const TABS: {
   id: MainTab;
@@ -84,6 +85,16 @@ const TABS: {
     activeBg: "bg-violet-950/20",
     underlineBg: "bg-violet-500",
     accentHex: "#8B5CF6"
+  },
+  {
+    id: "guide",
+    label: "User Guide",
+    icon: BookOpen,
+    desc: "Step-by-step tutorial & FAQ",
+    activeText: "text-orange-400",
+    activeBg: "bg-orange-950/20",
+    underlineBg: "bg-orange-500",
+    accentHex: "#F97316"
   }
 ];
 
@@ -182,7 +193,7 @@ export default function App() {
                   className={`relative flex items-center gap-2 px-4 py-3.5 text-[11px] font-bold transition-all duration-150 cursor-pointer whitespace-nowrap shrink-0 ${
                     isActive
                       ? `${tab.activeText} ${tab.activeBg}`
-                      : "text-slate-600 hover:text-slate-400 hover:bg-[#0D1225]"
+                      : "text-slate-400 hover:text-white hover:bg-[#0D1225]"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -237,6 +248,7 @@ export default function App() {
             {activeTab === "image"     && <ImagePromptStudio />}
             {activeTab === "resources" && <ResourceHub />}
             {activeTab === "career"    && <CareerHub />}
+            {activeTab === "guide"     && <UserManual />}
           </motion.div>
         </AnimatePresence>
       </main>

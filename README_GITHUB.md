@@ -1,13 +1,3 @@
----
-title: AI Prompt Studio
-emoji: 🚀
-colorFrom: indigo
-colorTo: purple
-sdk: docker
-app_port: 7860
-pinned: false
----
-
 # 🚀 AI Prompt Studio — Multi-AI Prompt Engineering Workspace
 
 > A professional, client-side-optimized workspace designed to craft, bridge, and refine high-performance prompts tailored specifically to the cognitive profiles of 8+ leading AI models. Ready for direct deployment on Hugging Face Spaces via Docker.
