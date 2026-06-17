@@ -266,12 +266,15 @@ AI Prompt Studio is optimized for direct hosting as a Hugging Face Space.
 
 ## 👤 About Me
 
-**Simaran Shaikh** — Finance & Data Analytics  
-BCom Financial Accounting · Don Bosco College, Panjim Goa · 2024–2027
+**Simaran Shaikh — Financial & Equity Research Analyst**  
+*BCom Financial Accounting · Don Bosco College, Panjim Goa · 2024–2027*
 
-📧 simaranshaikh04@gmail.com  
-💼 [linkedin.com/in/simaranshaikh](https://linkedin.com/in/simaranshaikh)  
-🐙 [github.com/Simaran-Shaikh-04](https://github.com/Simaran-Shaikh-04)
+* Specializing in corporate valuation, 3-statement financial modeling, Power BI, and Advanced Excel.
+* builder of full-stack AI financial tooling and prompt engineering workspaces.
+
+📧 [simaranshaikh04@gmail.com](mailto:simaranshaikh04@gmail.com)  
+💼 [linkedin.com/in/simaran-shaikh](https://www.linkedin.com/in/simaran-shaikh/)  
+🌐 [github.com/Simaran-Shaikh-04](https://github.com/Simaran-Shaikh-04)  
 
 ---
 
