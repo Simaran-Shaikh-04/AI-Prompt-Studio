@@ -255,6 +255,10 @@ AI Prompt Studio is optimized for direct hosting as a Hugging Face Space.
 *Tailored Learning Syllabi & Study Planners*
 ![Student Suite](assets/student-suite.png)
 
+### 🖼️ Image studio & Carrer Hub
+*Image Prompt Generator with variety*
+![Image Studio](assets/image-studio.png)
+
 > [!TIP]
 > Place your high-resolution PNGs in the `/assets` directory with these filenames to auto-render them on GitHub and Hugging Face.
 
