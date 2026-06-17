@@ -27,6 +27,16 @@ const TABS: {
   accentHex: string;
 }[] = [
   {
+    id: "guide",
+    label: "User Guide",
+    icon: BookOpen,
+    desc: "Step-by-step tutorial & FAQ",
+    activeText: "text-orange-400",
+    activeBg: "bg-orange-950/20",
+    underlineBg: "bg-orange-500",
+    accentHex: "#F97316"
+  },
+  {
     id: "forge",
     label: "Prompt Forge",
     icon: Sparkles,
@@ -85,21 +95,11 @@ const TABS: {
     activeBg: "bg-violet-950/20",
     underlineBg: "bg-violet-500",
     accentHex: "#8B5CF6"
-  },
-  {
-    id: "guide",
-    label: "User Guide",
-    icon: BookOpen,
-    desc: "Step-by-step tutorial & FAQ",
-    activeText: "text-orange-400",
-    activeBg: "bg-orange-950/20",
-    underlineBg: "bg-orange-500",
-    accentHex: "#F97316"
   }
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<MainTab>("forge");
+  const [activeTab, setActiveTab] = useState<MainTab>("guide");
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [keyModalOpen, setKeyModalOpen] = useState(false);
   const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false);
